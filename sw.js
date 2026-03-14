@@ -1,16 +1,16 @@
 /**
  * AFGE RIF Shield — Service Worker
- * @version rif-shield-v2
+ * @version rif-shield-v3
  * @description Caches app assets for offline use. Cache version must be manually
  * bumped on each production deploy to invalidate stale caches on user devices.
  *
  * Version history:
  * rif-shield-v1 — initial cache (deprecated)
- * rif-shield-v2 — added version strategy, offline fallback, proper install wait behavior
+ * rif-shield-v3 — cache bump Sprint 7 strategy, offline fallback, proper install wait behavior
  */
 
 /** @constant {string} Current cache version — bump this on every deploy */
-const CACHE_VERSION = 'rif-shield-v2';
+const CACHE_VERSION = 'rif-shield-v3';
 
 /**
  * Assets to pre-cache on Service Worker install.

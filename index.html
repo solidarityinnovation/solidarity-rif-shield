@@ -281,6 +281,107 @@ body.has-offline-banner #screens {
   background: #fee2e2;
   border-radius: 8px;
 }
+
+/* ── JOURNAL CONTROLS BAR (Sprint 7) ─────────────────────── */
+.journal-controls-bar {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin: 8px 0 4px;
+  padding: 0 2px;
+}
+.journal-search-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.journal-search-input {
+  flex: 1;
+  padding: 8px 12px;
+  border: 1.5px solid var(--navy);
+  border-radius: 8px;
+  font-size: 14px;
+  color: var(--navy);
+  background: #fff;
+  outline: none;
+}
+.journal-search-input:focus {
+  border-color: var(--gold);
+  box-shadow: 0 0 0 2px rgba(201,162,39,.25);
+}
+.journal-count-label {
+  font-size: 12px;
+  color: var(--muted);
+  font-weight: 600;
+  white-space: nowrap;
+  min-width: 130px;
+  text-align: right;
+}
+.journal-chip-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.filter-chip {
+  padding: 4px 12px;
+  border-radius: 20px;
+  border: 1.5px solid var(--navy);
+  background: #fff;
+  color: var(--navy);
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background .15s, color .15s, border-color .15s;
+}
+.filter-chip:focus {
+  outline: 2px solid var(--gold);
+  outline-offset: 2px;
+}
+.filter-chip--active {
+  background: var(--navy);
+  color: var(--gold);
+  border-color: var(--gold);
+}
+.chip-count {
+  font-weight: 400;
+  opacity: .85;
+  margin-left: 3px;
+}
+.date-filter-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+.date-filter-label {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--navy);
+}
+.date-filter-input {
+  padding: 6px 8px;
+  border: 1.5px solid var(--navy);
+  border-radius: 6px;
+  font-size: 13px;
+  color: var(--navy);
+  background: #fff;
+  outline: none;
+}
+.date-filter-input:focus {
+  border-color: var(--gold);
+  box-shadow: 0 0 0 2px rgba(201,162,39,.25);
+}
+.date-filter-clear { margin-left: auto; }
+.journal-empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 32px 16px;
+  gap: 12px;
+  color: var(--muted);
+  text-align: center;
+}
+.journal-empty-state p { font-size: 14px; margin: 0; }
 </style>
 </head>
 <body>
@@ -321,6 +422,42 @@ body.has-offline-banner #screens {
 <div class="card"><div class="card-hdr"><span class="card-ttl">Weekly Activity</span></div><canvas id="weekChart" height="160"></canvas></div>
 <div class="card"><div class="card-hdr"><span class="card-ttl">Week Summary</span></div><div style="display:flex;flex-wrap:wrap;gap:7px" id="j-summary"></div></div>
 <div class="sec-hd"><span class="sec-title">Recent Entries</span><span id="j-count" style="font-size:12px;color:var(--muted);font-weight:600"></span></div>
+<div id="journal-controls" class="journal-controls-bar">
+
+  <div class="journal-search-row">
+    <input type="search"
+           id="journal-search"
+           class="journal-search-input"
+           aria-label="Search journal entries"
+           placeholder="Search tasks and notes..."
+           autocomplete="off">
+    <span id="journal-count" class="journal-count-label">Showing 0 of 0 entries</span>
+  </div>
+
+  <div id="journal-filter-chips"
+       class="journal-chip-row"
+       role="group"
+       aria-label="Filter by category">
+    <!-- chips injected by initFilterChips() at DOMContentLoaded -->
+  </div>
+
+  <div id="journal-date-filter" class="date-filter-row">
+    <label class="date-filter-label" for="journal-date-from">From</label>
+    <input type="date"
+           id="journal-date-from"
+           class="date-filter-input"
+           aria-label="Filter from date">
+    <label class="date-filter-label" for="journal-date-to">To</label>
+    <input type="date"
+           id="journal-date-to"
+           class="date-filter-input"
+           aria-label="Filter to date">
+    <button id="journal-date-clear"
+            class="btn btn-o btn-sm date-filter-clear"
+            onclick="clearDateRangeFilter()">Clear dates</button>
+  </div>
+
+</div>
 <div id="journal-list"><div class="empty-state"><div class="es-icon">&#128221;</div><div class="es-t">No entries yet</div><div class="es-d">Tap + Log Entry to record your work</div></div></div>
 </div>
 <div class="screen" id="s-training">
@@ -376,7 +513,7 @@ body.has-offline-banner #screens {
 <div class="modal-sub">Record your work to build your protection score</div>
 <div class="form-group">
   <label class="form-label" id="category-label">Category</label>
-  <div id="log-category-grid" class="cat-grid" role="group" aria-labelledby="category-label">
+  <div id="log-category-grid" class="cat-grid" role="group" aria-label="Select activity category">
     <button type="button" class="cat-btn" data-value="seniority"
             role="radio" aria-checked="false" aria-label="Seniority">
       <span class="cat-btn-icon">&#128197;</span>
@@ -505,6 +642,24 @@ const HOURS_STEP      = 0.25;  // Hours stepper increment/decrement step
 const HOURS_MIN       = 0.25;  // Minimum allowable hours value
 const HOURS_MAX       = 24;    // Maximum allowable hours value
 const HOURS_DEFAULT   = 1.0;   // Default hours value on form open/reset
+// ── Sprint 7: Journal filter constants ─────────────────────────────────────
+
+/** @constant {number} Debounce delay in ms for journal search input. */
+const JOURNAL_SEARCH_DEBOUNCE_MS = 300;
+
+/**
+ * Ordered array of category descriptor objects for filter chip rendering.
+ * 'all' must be first. Category values match data.journal[].cat field.
+ * @constant {Array<{value:string, label:string}>}
+ */
+const JOURNAL_FILTER_CATEGORIES = [
+  { value: 'all',         label: 'All'         },
+  { value: 'seniority',   label: 'Seniority'   },
+  { value: 'performance', label: 'Performance' },
+  { value: 'awards',      label: 'Awards'      },
+  { value: 'tenure',      label: 'Tenure'      },
+  { value: 'veterans',    label: 'Veterans'    }
+];
 // ╔════════════════════════════════════════════════════════════════════╗
 // ║  MODULE: STORAGE — localStorage read/write with schema versioning  ║
 // ╚════════════════════════════════════════════════════════════════════╝
@@ -716,12 +871,12 @@ function renderDashboard(){
   }
   [['seniority',data.seniority||0,30],['performance',data.performance||0,25],['veterans',data.veterans||0,20],['awards',data.awards||0,15],['tenure',data.tenure||0,10]].forEach(function([k,v,mx]){
     const el=document.getElementById('v-'+k);
-    if(el)el.innerHTML=v+"<span class='vden'>/"+mx+'</span>';
+    if(el)el.innerHTML=escapeHtml(String(v))+"<span class='vden'>/"+escapeHtml(String(mx))+'</span>';
     const bar=document.getElementById('vb-'+k);
     if(bar)bar.style.width=Math.round(v/mx*100)+'%';
   });
   const vtot=document.getElementById('v-total');
-  if(vtot)vtot.innerHTML=score+"<span class='vden'>/100</span>";
+  if(vtot)vtot.innerHTML=escapeHtml(String(score))+"<span class='vden'>/100</span>";
   const vbt=document.getElementById('vb-total');
   if(vbt)vbt.style.width=score+'%';
   const streak=calcStreak(data.journal);
@@ -785,28 +940,29 @@ const ibody=document.getElementById('ins-body');if(ibody)ibody.textContent=ins.b
  * @returns {void}
  */
 function renderJournal(){
+  // Reset filter state on every journal screen navigation
+  journalFilterState = { query: '', category: 'all', dateFrom: '', dateTo: '' };
+  const searchEl = document.getElementById('journal-search');
+  if (searchEl) searchEl.value = '';
+  const fromEl = document.getElementById('journal-date-from');
+  if (fromEl) fromEl.value = '';
+  const toEl = document.getElementById('journal-date-to');
+  if (toEl) toEl.value = '';
+  // Reset chip visual state (selectFilterChip guards missing DOM gracefully)
+  selectFilterChip('all');
   const data=loadData();
-  const list=document.getElementById('journal-list');if(!list)return;
   const entries=[...data.journal].reverse();
   const jc=document.getElementById('j-count');if(jc)jc.textContent=entries.length+' total';
-  const catL={seniority:'Seniority',performance:'Performance',awards:'Awards',tenure:'Tenure',veterans:'Veterans'};
-  if(!entries.length){
-    list.innerHTML="<div class='empty-state'><div class='es-icon'>&#128221;</div><div class='es-t'>No entries yet</div><div class='es-d'>Tap + Log Entry to record your work</div></div>";
-  }else{
-    list.innerHTML=entries.slice(0,30).map(function(e){
-      const cat=escapeHtml(catL[e.cat]||e.cat||'General');
-      const task=escapeHtml(e.task);
-      const notes=e.notes?"<div class='je-note'>"+escapeHtml(e.notes)+'</div>':'';
-      const hrs=e.hours?"<span>"+escapeHtml(String(e.hours))+'h</span>':'';
-      return "<div class='je'><div class='je-t'>"+task+"</div><div class='je-m'><span class='chip chip-b'>"+cat+"</span><span>"+escapeHtml(e.date)+'</span>'+hrs+"</div>"+notes+'</div>';
-    }).join('');
-  }
+  // Update chip counts from full unfiltered data
+  updateChipCounts();
+  // Render filtered list (applyJournalFilters handles empty state + count label)
+  applyJournalFilters();
   const today=new Date();
   const weekStart=new Date(today);weekStart.setDate(today.getDate()-today.getDay());weekStart.setHours(0,0,0,0);
   const thisWeek=data.journal.filter(function(e){return new Date(e.date+'T00:00:00')>=weekStart;});
   const totalHrs=thisWeek.reduce(function(s,e){return s+(parseFloat(e.hours)||0);},0);
   const jsumm=document.getElementById('j-summary');
-  if(jsumm)jsumm.innerHTML="<span class='chip chip-b'>"+thisWeek.length+" entries this week</span> <span class='chip chip-g'>"+totalHrs.toFixed(1)+'h logged</span>';
+  if(jsumm)jsumm.innerHTML="<span class='chip chip-b'>"+escapeHtml(String(thisWeek.length))+" entries this week</span> <span class='chip chip-g'>"+escapeHtml(String(totalHrs.toFixed(1)))+'h logged</span>';
   const dayNames=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
   const cnts=new Array(7).fill(0),hrs=new Array(7).fill(0);
   thisWeek.forEach(function(e){
@@ -822,6 +978,264 @@ function renderJournal(){
     ]},options:{responsive:true,plugins:{legend:{position:'bottom',labels:{font:{size:10},boxWidth:12}}},scales:{x:{grid:{display:false},ticks:{font:{size:11}}},y:{grid:{color:'rgba(0,0,0,.05)'},ticks:{font:{size:10}},beginAtZero:true}}}});}
   }
 }
+// ╔══════════════════════════════════════════════════════════════════════════════╗
+// ║  MODULE: JOURNAL FILTERS — search, category chips, date range filtering     ║
+// ╚══════════════════════════════════════════════════════════════════════════════╝
+
+/** @type {number|null} Timeout ID for debounced journal search input. */
+let journalSearchDebounceId = null;
+
+/**
+ * Persistent filter state object for the journal screen.
+ * Reset to defaults at the start of renderJournal() on every navigation.
+ * @type {{query:string, category:string, dateFrom:string, dateTo:string}}
+ */
+let journalFilterState = {
+  query:    '',
+  category: 'all',
+  dateFrom: '',
+  dateTo:   ''
+};
+
+/**
+ * Updates the #journal-count element with filtered vs total entry counts.
+ * Always displays in format "Showing X of Y entries".
+ * @param {number} shown - Count of entries currently displayed after filtering
+ * @param {number} total - Total count of all journal entries (unfiltered)
+ * @returns {void}
+ */
+function updateJournalCount(shown, total) {
+  const el = document.getElementById('journal-count');
+  if (!el) return;
+  el.textContent = 'Showing ' + shown + ' of ' + total + ' entries';
+}
+
+/**
+ * Renders a pre-filtered, pre-reversed array of journal entries to #journal-list.
+ * Updates the filtered count display via updateJournalCount().
+ * Shows empty state when entries.length === 0. Does NOT cap entry count.
+ * @param {Array<Object>} entries - Pre-filtered, pre-reversed journal entry objects
+ * @returns {void}
+ */
+function renderFilteredJournal(entries) {
+  const list = document.getElementById('journal-list');
+  if (!list) return;
+  const data = loadData();
+  const total = data.journal.length;
+  updateJournalCount(entries.length, total);
+  const catL = {
+    seniority:   'Seniority',
+    performance: 'Performance',
+    awards:      'Awards',
+    tenure:      'Tenure',
+    veterans:    'Veterans'
+  };
+  if (entries.length === 0 && total > 0) {
+    list.innerHTML = [
+      "<div class='journal-empty-state'>",
+      "<p>No entries match your search.</p>",
+      "<button id='journal-clear-all' class='btn btn-o btn-sm' ",
+      "onclick='clearJournalSearch()'>Clear search</button>",
+      "</div>"
+    ].join('');
+  } else if (total === 0) {
+    list.innerHTML = "<div class='empty-state'>" +
+      "<div class='es-icon'>&#128221;</div>" +
+      "<div class='es-t'>No entries yet</div>" +
+      "<div class='es-d'>Tap + Log Entry to record your work</div>" +
+      "</div>";
+  } else {
+    list.innerHTML = entries.map(function(e) {
+      const cat   = escapeHtml(catL[e.cat] || e.cat || 'General');
+      const task  = escapeHtml(e.task);
+      const notes = e.notes ? "<div class='je-note'>" + escapeHtml(e.notes) + '</div>' : '';
+      const hrs   = e.hours ? "<span>" + escapeHtml(String(e.hours)) + 'h</span>' : '';
+      return "<div class='je'><div class='je-t'>" + task +
+        "</div><div class='je-m'><span class='chip chip-b'>" + cat +
+        "</span><span>" + escapeHtml(e.date) + '</span>' + hrs +
+        '</div>' + notes + '</div>';
+    }).join('');
+  }
+}
+
+/**
+ * Master filter orchestrator. Reads journalFilterState, applies all active
+ * AND predicates to data.journal in sequence, then calls renderFilteredJournal().
+ * Predicate order: text search → category → dateFrom → dateTo.
+ * @returns {void}
+ */
+function applyJournalFilters() {
+  const data = loadData();
+  let entries = [...data.journal].reverse();
+
+  // Predicate 1: text search (case-insensitive, task OR notes)
+  const q = journalFilterState.query.trim().toLowerCase();
+  if (q) {
+    entries = entries.filter(function(e) {
+      return e.task.toLowerCase().includes(q) ||
+             (e.notes && e.notes.toLowerCase().includes(q));
+    });
+  }
+
+  // Predicate 2: category chip
+  if (journalFilterState.category !== 'all') {
+    entries = entries.filter(function(e) {
+      return e.cat === journalFilterState.category;
+    });
+  }
+
+  // Predicate 3: date from (inclusive lower bound — lexicographic ISO string)
+  if (journalFilterState.dateFrom) {
+    entries = entries.filter(function(e) {
+      return e.date >= journalFilterState.dateFrom;
+    });
+  }
+
+  // Predicate 4: date to (inclusive upper bound — lexicographic ISO string)
+  if (journalFilterState.dateTo) {
+    entries = entries.filter(function(e) {
+      return e.date <= journalFilterState.dateTo;
+    });
+  }
+
+  renderFilteredJournal(entries);
+}
+
+/**
+ * Resets text search state and clears the search input value.
+ * Does NOT reset category chip or date range — clears text search only.
+ * Safe to call when not on journal screen (DOM lookups are null-guarded).
+ * @returns {void}
+ */
+function clearJournalSearch() {
+  journalFilterState.query = '';
+  const el = document.getElementById('journal-search');
+  if (el) el.value = '';
+  applyJournalFilters();
+}
+
+/**
+ * Updates journalFilterState.category, toggles aria-pressed and
+ * filter-chip--active CSS on all chips, then calls applyJournalFilters().
+ * Exactly one chip has aria-pressed="true" at all times.
+ * Re-clicking the active chip: no state change, no toggle-off.
+ * @param {string} category - Category value: 'all' or a category key
+ * @returns {void}
+ */
+function selectFilterChip(category) {
+  journalFilterState.category = category;
+  const buttons = document.querySelectorAll('#journal-filter-chips .filter-chip');
+  buttons.forEach(function(btn) {
+    const isActive = (btn.dataset.category === category);
+    btn.setAttribute('aria-pressed', isActive ? 'true' : 'false');
+    btn.classList.toggle('filter-chip--active', isActive);
+  });
+  applyJournalFilters();
+}
+
+/**
+ * Recomputes entry counts from FULL unfiltered data.journal and updates
+ * the chip-count span text inside each chip button. Never uses filtered data.
+ * @returns {void}
+ */
+function updateChipCounts() {
+  const data = loadData();
+  const total = data.journal.length;
+  const buttons = document.querySelectorAll('#journal-filter-chips .filter-chip');
+  buttons.forEach(function(btn) {
+    const cat = btn.dataset.category;
+    const count = (cat === 'all')
+      ? total
+      : data.journal.filter(function(e) { return e.cat === cat; }).length;
+    const badge = btn.querySelector('.chip-count');
+    if (badge) badge.textContent = '(' + count + ')';
+  });
+}
+
+/**
+ * Injects 6 filter chip buttons ("All" + 5 categories) into #journal-filter-chips.
+ * Attaches click listeners, sets initial active state on "All", calls updateChipCounts().
+ * Safe no-op if #journal-filter-chips is not found in DOM.
+ * @returns {void}
+ */
+function initFilterChips() {
+  const container = document.getElementById('journal-filter-chips');
+  if (!container) return;
+  JOURNAL_FILTER_CATEGORIES.forEach(function(cat) {
+    const btn = document.createElement('button');
+    btn.className = 'filter-chip';
+    btn.dataset.category = cat.value;
+    btn.setAttribute('aria-pressed', cat.value === 'all' ? 'true' : 'false');
+    btn.innerHTML = escapeHtml(cat.label) + ' <span class="chip-count">(0)</span>';
+    if (cat.value === 'all') btn.classList.add('filter-chip--active');
+    btn.addEventListener('click', function() {
+      selectFilterChip(cat.value);
+    });
+    container.appendChild(btn);
+  });
+  updateChipCounts();
+}
+
+/**
+ * Attaches 'change' event listeners to both date inputs (#journal-date-from,
+ * #journal-date-to). On change, updates journalFilterState and calls
+ * applyJournalFilters().
+ * NOTE: type=date falls back to text input on iOS <14.3;
+ * YYYY-MM-DD string comparison remains valid for manual entry.
+ * @returns {void}
+ */
+function initDateRangeFilter() {
+  const fromEl = document.getElementById('journal-date-from');
+  const toEl   = document.getElementById('journal-date-to');
+  if (fromEl) {
+    fromEl.addEventListener('change', function() {
+      journalFilterState.dateFrom = fromEl.value;
+      applyJournalFilters();
+    });
+  }
+  if (toEl) {
+    toEl.addEventListener('change', function() {
+      journalFilterState.dateTo = toEl.value;
+      applyJournalFilters();
+    });
+  }
+}
+
+/**
+ * Resets both date inputs to empty, clears dateFrom and dateTo in
+ * journalFilterState, then calls applyJournalFilters().
+ * Safe to call when both inputs are already empty.
+ * @returns {void}
+ */
+function clearDateRangeFilter() {
+  journalFilterState.dateFrom = '';
+  journalFilterState.dateTo   = '';
+  const fromEl = document.getElementById('journal-date-from');
+  const toEl   = document.getElementById('journal-date-to');
+  if (fromEl) fromEl.value = '';
+  if (toEl)   toEl.value   = '';
+  applyJournalFilters();
+}
+
+/**
+ * Attaches a debounced 'input' event listener to #journal-search.
+ * Debounce delay: JOURNAL_SEARCH_DEBOUNCE_MS (300ms).
+ * Updates journalFilterState.query and calls applyJournalFilters().
+ * No DOM changes happen per-keystroke — all updates inside setTimeout callback.
+ * @returns {void}
+ */
+function initJournalSearch() {
+  const el = document.getElementById('journal-search');
+  if (!el) return;
+  el.addEventListener('input', function() {
+    clearTimeout(journalSearchDebounceId);
+    journalSearchDebounceId = setTimeout(function() {
+      journalFilterState.query = el.value;
+      applyJournalFilters();
+    }, JOURNAL_SEARCH_DEBOUNCE_MS);
+  });
+}
+
 // ╔═══════════════════════════════════════════════════════════════════════╗
 // ║  MODULE: TRAINING — course roadmap rendering and completion toggling  ║
 // ╚═══════════════════════════════════════════════════════════════════════╝
@@ -908,6 +1322,7 @@ function renderReports(){
  * @returns {void}
  */
 function openLogModal(){
+  clearJournalSearch();
   const m=document.getElementById('log-modal');
   if(m)m.classList.add('open');
   setTimeout(function(){const t=document.getElementById('log-task');if(t)t.focus();},200);
@@ -1589,7 +2004,6 @@ function triggerInstallPrompt() {
   if (btn) btn.style.display = 'none';
   deferredInstallPrompt.prompt();
   deferredInstallPrompt.userChoice.then(choice => {
-    console.log('PWA install choice:', choice.outcome);
     deferredInstallPrompt = null;
   });
 }
@@ -1695,7 +2109,12 @@ document.addEventListener('DOMContentLoaded',function(){
   initCharCounters();
   initCategoryGrid();
   initHoursStepper();
+  // Sprint 7: Journal filter initialization
+  initJournalSearch();
+  initFilterChips();
+  initDateRangeFilter();
 });
+
 </script>
 </body>
 </html>
