@@ -6,280 +6,527 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="RIF Shield">
-<meta name="theme-color" content="#003087">
+<meta name="theme-color" content="#0f1c3f">
 <title>AFGE RIF Shield</title>
+<meta name="description" content="Track your federal employment protection score">
 <link rel="manifest" href="manifest.json">
 <link rel="apple-touch-icon" href="icons/icon-192.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <style>
-.card{background:var(--card);border-radius:var(--r);padding:16px;margin-bottom:13px;box-shadow:var(--sh);border:1px solid var(--border);}
-.card-t{font-size:10.5px;font-weight:800;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin-bottom:13px;display:flex;align-items:center;gap:6px;}
-.hero{background:linear-gradient(135deg,var(--blue),var(--blue-l));color:#fff;border-radius:var(--r);padding:18px;margin-bottom:13px;box-shadow:var(--sh2);position:relative;overflow:hidden;}
-.hero::before{content:'';position:absolute;top:-50px;right:-40px;width:140px;height:140px;background:rgba(255,255,255,.07);border-radius:50%;}
-.hero::after{content:'';position:absolute;bottom:-30px;left:30px;width:90px;height:90px;background:rgba(253,184,19,.1);border-radius:50%;}
-.h-row{display:flex;align-items:flex-end;justify-content:space-between;position:relative;z-index:1;}
-.h-score{font-size:62px;font-weight:900;line-height:.9;letter-spacing:-3px}.h-denom{font-size:20px;font-weight:400;opacity:.55;}
-.h-lbl{font-size:13px;opacity:.85;margin-top:6px;font-weight:600}
-.h-badge{background:var(--gold);color:var(--blue);border-radius:12px;padding:10px 15px;text-align:center;flex-shrink:0;}
-.h-badge .ln{font-size:32px;font-weight:900;line-height:1}.h-badge .ll{font-size:9.5px;font-weight:800;text-transform:uppercase;letter-spacing:.4px}
-.h-next{margin-top:13px;background:rgba(255,255,255,.13);border-radius:8px;padding:9px 13px;display:flex;align-items:center;justify-content:space-between;position:relative;z-index:1;}
-.h-next-t{font-size:12.5px;font-weight:600}.h-pts{background:var(--gold);color:var(--blue);border-radius:20px;padding:3px 10px;font-size:11px;font-weight:900;}
-.metric{display:flex;align-items:center;gap:10px;margin-bottom:11px;}.metric:last-child{margin-bottom:0}
-.m-icon{font-size:19px;width:26px;text-align:center;flex-shrink:0}.m-info{flex:1;min-width:0}
-.m-name{font-size:12.5px;font-weight:700;display:flex;justify-content:space-between;margin-bottom:5px;}.m-pts{font-size:11px;color:var(--muted);font-weight:600}
-.bar-bg{height:7px;background:#e8edf5;border-radius:4px;overflow:hidden}.bar-fill{height:100%;border-radius:4px;transition:width .8s cubic-bezier(.4,0,.2,1);}
-.bf-blue{background:linear-gradient(90deg,var(--blue),var(--blue-l))}.bf-gold{background:linear-gradient(90deg,var(--gold-d),var(--gold))}.bf-green{background:linear-gradient(90deg,#1e8449,#27ae60)}.bf-orange{background:linear-gradient(90deg,#c0392b,#e67e22)}.bf-purple{background:linear-gradient(90deg,#6c3483,#9b59b6)}
-.btn{display:inline-flex;align-items:center;justify-content:center;gap:7px;padding:13px 20px;border-radius:10px;border:none;cursor:pointer;font-size:14px;font-weight:700;transition:all .18s;font-family:inherit;}
-.btn-full{width:100%}.btn-p{background:linear-gradient(135deg,var(--blue),var(--blue-l));color:#fff;box-shadow:0 4px 14px rgba(0,48,135,.32)}.btn-p:active{transform:scale(.97)}
-.btn-g{background:linear-gradient(135deg,var(--gold-d),var(--gold));color:var(--blue);box-shadow:0 4px 14px rgba(253,184,19,.38)}.btn-g:active{transform:scale(.97)}
-.btn-o{background:transparent;color:var(--blue);border:2px solid var(--blue);padding:9px 16px;font-size:13px}.btn-sm{padding:8px 14px;font-size:12px;border-radius:8px}.btn-danger{background:#d63031;color:#fff;}
-.fg{margin-bottom:13px}.fl{font-size:11px;font-weight:700;color:var(--muted);margin-bottom:5px;display:block;text-transform:uppercase;letter-spacing:.5px}
-.fc{width:100%;padding:11px 13px;border-radius:9px;border:1.5px solid var(--border);background:#fff;font-size:14px;color:var(--text);outline:none;font-family:inherit;transition:border .18s;}
-.fc:focus{border-color:var(--blue);box-shadow:0 0 0 3px rgba(0,48,135,.09)}
-select.fc{appearance:none;background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%236b7a8d' fill='none' stroke-width='2' stroke-linecap='round'/%3E%3C/svg%3E") right 13px center no-repeat;padding-right:35px;cursor:pointer;}
-textarea.fc{resize:vertical;min-height:80px}
-.chip{display:inline-flex;align-items:center;gap:4px;border-radius:20px;padding:4px 10px;font-size:11px;font-weight:700;}
-.chip-b{background:#eef2f9;color:var(--blue)}.chip-g{background:#fff9e6;color:#7a5900}.chip-gr{background:#e9f7ef;color:#1a6b3a}.chip-r{background:#fdeaea;color:#9b1c1c}
-.row2{display:flex;gap:10px;margin-bottom:13px;}.row2>.card{flex:1;margin-bottom:0;padding:13px;}
-.stat-n{font-size:26px;font-weight:900;color:var(--blue);line-height:1}.stat-l{font-size:11px;color:var(--muted);font-weight:600;margin-top:3px}
-.divider{height:1px;background:var(--border);margin:12px 0}
-.je{border-left:3px solid var(--blue);padding:10px 12px;background:#f8fafd;border-radius:0 9px 9px 0;margin-bottom:9px;}
-.je-t{font-size:13px;font-weight:700;margin-bottom:4px}.je-m{font-size:11px;color:var(--muted);display:flex;gap:8px;flex-wrap:wrap;align-items:center;}
-.ti{display:flex;align-items:flex-start;gap:12px;padding:13px 0;border-bottom:1px solid var(--border);}.ti:last-child{border-bottom:none;padding-bottom:0}
-.ti-pts{background:linear-gradient(135deg,var(--blue),var(--blue-l));color:#fff;border-radius:9px;padding:7px 10px;text-align:center;flex-shrink:0;min-width:54px;}
-.ti-pts .tp{font-size:18px;font-weight:900;line-height:1}.ti-pts .tl{font-size:9px;opacity:.8;margin-top:2px}
-.ti-info{flex:1}.ti-name{font-size:13.5px;font-weight:700;margin-bottom:3px}.ti-desc{font-size:12px;color:var(--muted);margin-bottom:6px}
+:root{--navy:#0f1c3f;--navy-mid:#1a2d5a;--navy-light:#243d75;--gold:#c9a227;--gold-light:#e8be45;--gold-pale:#fdf4dc;--slate:#8fa3cc;--slate-light:#b8c8e0;--bg:#f0f2f7;--card:#ffffff;--border:#e2e8f0;--text:#1a1f2e;--muted:#6b7a99;--green:#22c55e;--amber:#f59e0b;--red:#ef4444;--r-card:14px;--r-hero:18px;--sh-sm:0 1px 3px rgba(15,28,63,.08),0 1px 2px rgba(15,28,63,.05);--sh-md:0 4px 14px rgba(15,28,63,.10),0 2px 4px rgba(15,28,63,.06);--sh-lg:0 10px 32px rgba(15,28,63,.16),0 4px 8px rgba(15,28,63,.08);--header-h:64px;--nav-h:68px;}
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+html,body{height:100%;font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(--text);overscroll-behavior:none;-webkit-font-smoothing:antialiased;}
+body{padding-top:var(--header-h);padding-bottom:calc(var(--nav-h) + 8px);}
+a{text-decoration:none;color:inherit;}button{font-family:inherit;cursor:pointer;border:none;background:none;}
+#hdr{position:fixed;top:0;left:0;right:0;z-index:100;height:var(--header-h);background:var(--navy);display:flex;align-items:center;justify-content:space-between;padding:0 16px;padding-top:env(safe-area-inset-top,0px);box-shadow:0 2px 16px rgba(0,0,0,.28);}
+.hd-brand{display:flex;align-items:center;gap:10px;}
+.hd-logo{width:38px;height:38px;border-radius:9px;background:var(--gold);display:flex;align-items:center;justify-content:center;font-family:'DM Mono',monospace;font-size:17px;font-weight:500;color:var(--navy);flex-shrink:0;box-shadow:0 2px 8px rgba(201,162,39,.4);}
+.hd-title{font-size:16px;font-weight:800;color:#fff;line-height:1.15;letter-spacing:-.3px;}
+.hd-sub{font-size:9.5px;font-weight:500;color:var(--slate);margin-top:1px;}
+.hd-streak{display:flex;align-items:center;gap:5px;background:rgba(201,162,39,.15);border:1.5px solid rgba(201,162,39,.4);border-radius:20px;padding:5px 10px;font-family:'DM Mono',monospace;font-size:13px;font-weight:500;color:var(--gold-light);}
+#screens{max-width:520px;margin:0 auto;}
+.screen{display:none;padding:14px 14px 6px;}
+.screen.active{display:block;animation:fadeIn .2s ease;}
+@keyframes fadeIn{from{opacity:0;transform:translateY(6px);}to{opacity:1;transform:translateY(0);}}
+.hero-card{background:var(--navy);border-radius:var(--r-hero);padding:20px;margin-bottom:14px;box-shadow:var(--sh-lg);position:relative;overflow:hidden;}
+.hero-card::before{content:'';position:absolute;top:-60px;right:-50px;width:180px;height:180px;background:rgba(143,163,204,.07);border-radius:50%;}
+.hero-card::after{content:'';position:absolute;bottom:-40px;left:10px;width:130px;height:130px;background:rgba(201,162,39,.06);border-radius:50%;}
+.hero-top{display:flex;align-items:center;justify-content:space-between;position:relative;z-index:1;margin-bottom:18px;}
+.hero-ring-wrap{display:flex;align-items:center;gap:16px;}
+.hero-ring{position:relative;flex-shrink:0;width:80px;height:80px;}
+.hero-ring svg{position:absolute;top:0;left:0;transform:rotate(-90deg);}
+.ring-bg{stroke:rgba(143,163,204,.2);stroke-width:6;fill:none;}
+.ring-fg{stroke:var(--gold);stroke-width:6;fill:none;stroke-linecap:round;transition:stroke-dashoffset 1.4s cubic-bezier(.4,0,.2,1);}
+.ring-val{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);text-align:center;}
+.ring-num{font-family:'DM Mono',monospace;font-size:20px;font-weight:500;color:#fff;line-height:1;}
+.ring-den{font-family:'DM Mono',monospace;font-size:10px;color:var(--slate);}
+.hero-level-lbl{font-size:11px;font-weight:600;color:var(--slate-light);margin-bottom:3px;}
+.hero-level-val{font-family:'DM Mono',monospace;font-size:30px;font-weight:500;color:#fff;line-height:1;}
+.hero-level-sub{font-size:11px;color:var(--slate);margin-top:3px;}
+.hero-xp{position:relative;z-index:1;}
+.hero-xp-labels{display:flex;justify-content:space-between;margin-bottom:5px;}
+.xp-lbl{font-size:10px;font-weight:600;color:var(--slate);}
+.xp-lbl.cur{color:var(--gold-light);}
+.xp-bg{height:8px;background:rgba(143,163,204,.18);border-radius:4px;overflow:hidden;}
+.xp-fill{height:100%;background:linear-gradient(90deg,var(--gold),var(--gold-light));border-radius:4px;transition:width 1.2s cubic-bezier(.4,0,.2,1);position:relative;overflow:hidden;}
+.xp-fill::after{content:'';position:absolute;top:0;left:-100%;width:60%;height:100%;background:linear-gradient(90deg,transparent,rgba(255,255,255,.45),transparent);animation:shimmer 2.5s ease-in-out infinite;}
+@keyframes shimmer{0%{left:-100%;}100%{left:220%;}}
 .alert{border-radius:10px;padding:11px 13px;margin-bottom:13px;display:flex;align-items:flex-start;gap:9px;}
-.alert-warn{background:#fffbeb;border:1px solid #f6d860}.alert-info{background:#eff6ff;border:1px solid #bfdbfe}.alert-success{background:#f0fdf4;border:1px solid #86efac}
-.alert-icon{font-size:18px;flex-shrink:0;margin-top:1px}.alert-t{font-size:12.5px;font-weight:700;margin-bottom:2px}.alert-d{font-size:11.5px;color:var(--muted)}
+.alert-warn{background:#fffbeb;border:1px solid #f6d860;}
+.alert-info{background:#eff6ff;border:1px solid #bfdbfe;}
+.alert-success{background:#f0fdf4;border:1px solid #86efac;}
+.alert-icon{font-size:17px;flex-shrink:0;margin-top:1px;}
+.alert-t{font-size:12.5px;font-weight:700;margin-bottom:2px;}
+.alert-d{font-size:11.5px;color:var(--muted);line-height:1.4;}
+.chip{display:inline-flex;align-items:center;border-radius:20px;padding:3px 9px;font-size:10.5px;font-weight:700;}
+.chip-b{background:rgba(15,28,63,.08);color:var(--navy);}
+.chip-g{background:rgba(201,162,39,.15);color:#7a5900;}
+.chip-gr{background:#e9f7ef;color:#1a6b3a;}
+.chip-r{background:#fdeaea;color:#9b1c1c;}
+.chip-s{background:rgba(143,163,204,.2);color:var(--navy-mid);}
 .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:200;display:flex;align-items:flex-end;justify-content:center;opacity:0;pointer-events:none;transition:opacity .25s;}
-.modal-overlay.open{opacity:1;pointer-events:all}
-.modal{background:#fff;border-radius:20px 20px 0 0;padding:20px 18px calc(env(safe-area-inset-bottom,0px) + 20px);width:100%;max-width:520px;transform:translateY(100%);transition:transform .3s cubic-bezier(.4,0,.2,1);max-height:92vh;overflow-y:auto;}
-.modal-overlay.open .modal{transform:translateY(0)}
+.modal-overlay.open{opacity:1;pointer-events:all;}
+.modal{background:#fff;border-radius:20px 20px 0 0;padding:20px 18px calc(env(safe-area-inset-bottom,0px) + 24px);width:100%;max-width:520px;transform:translateY(100%);transition:transform .3s cubic-bezier(.4,0,.2,1);max-height:92vh;overflow-y:auto;}
+.modal-overlay.open .modal{transform:translateY(0);}
 .modal-handle{width:36px;height:4px;background:var(--border);border-radius:2px;margin:0 auto 16px;}
-.modal-title{font-size:18px;font-weight:800;margin-bottom:16px}
-.toast{position:fixed;top:calc(env(safe-area-inset-top,0px)+70px);left:50%;transform:translateX(-50%) translateY(-20px);background:#1a2332;color:#fff;padding:10px 18px;border-radius:25px;font-size:13px;font-weight:600;z-index:300;opacity:0;transition:all .3s;white-space:nowrap;pointer-events:none;}
-.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
-.lvl-scale{display:flex;gap:6px;margin-bottom:4px;}
-.lvl-box{flex:1;padding:8px 4px;border-radius:8px;text-align:center;border:2px solid var(--border);transition:all .3s;}
-.lvl-box.active{border-color:var(--gold);background:var(--gold);}
-.lvl-box .lb-n{font-size:15px;font-weight:900;color:var(--blue)}.lvl-box .lb-r{font-size:9px;color:var(--muted);font-weight:600}.lvl-box.active .lb-r{color:var(--blue)}
-.sec-hd{display:flex;align-items:center;justify-content:space-between;margin-bottom:11px;}
-.sec-title{font-size:15px;font-weight:800;color:var(--text)}
+.modal-title{font-size:18px;font-weight:800;margin-bottom:4px;}
+.modal-sub{font-size:13px;color:var(--muted);margin-bottom:16px;}
+.ob-step{display:none;}
+.ob-step.active{display:block;}
+.ob-hero{text-align:center;padding:16px 0 12px;}
+.ob-icon{font-size:52px;margin-bottom:12px;}
+.ob-title{font-size:20px;font-weight:800;color:var(--navy);margin-bottom:8px;}
+.ob-body{font-size:14px;color:var(--muted);line-height:1.6;}
+.ob-dots{display:flex;justify-content:center;gap:6px;margin:14px 0;}
+.ob-dot{width:8px;height:8px;border-radius:50%;background:var(--border);transition:all .2s;}
+.ob-dot.active{background:var(--navy);width:20px;border-radius:4px;}
+.toast{position:fixed;top:calc(env(safe-area-inset-top,0px) + 72px);left:50%;transform:translateX(-50%) translateY(-12px);background:#1a2332;color:#fff;padding:10px 18px;border-radius:25px;font-size:13px;font-weight:600;z-index:400;opacity:0;transition:all .3s;white-space:nowrap;pointer-events:none;}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+.fab{position:fixed;bottom:calc(var(--nav-h) + 16px);right:16px;width:52px;height:52px;border-radius:50%;background:linear-gradient(135deg,var(--gold),var(--gold-light));color:var(--navy);font-size:26px;font-weight:300;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 18px rgba(201,162,39,.5);cursor:pointer;border:none;z-index:90;transition:transform .18s;}
+.fab:active{transform:scale(.93);}
+#bnav{position:fixed;bottom:0;left:0;right:0;z-index:100;height:var(--nav-h);background:var(--card);border-top:1px solid var(--border);display:flex;align-items:stretch;padding-bottom:env(safe-area-inset-bottom,0px);box-shadow:0 -2px 12px rgba(15,28,63,.07);}
+.nb{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;background:none;border:none;cursor:pointer;font-size:10px;font-weight:600;color:var(--muted);transition:color .18s;padding:8px 4px;}
+.nb .nb-i{font-size:20px;line-height:1;}
+.nb.on{color:var(--navy);}
+.nb.on .nb-i{filter:drop-shadow(0 0 4px rgba(201,162,39,.6));}
+.je{border-left:3px solid var(--navy);padding:10px 12px;background:#f8fafd;border-radius:0 9px 9px 0;margin-bottom:9px;}
+.je-t{font-size:13px;font-weight:700;margin-bottom:4px;}
+.je-m{font-size:11px;color:var(--muted);display:flex;gap:7px;flex-wrap:wrap;align-items:center;}
+.je-note{font-size:11px;color:var(--muted);margin-top:4px;font-style:italic;}
+.ti{display:flex;align-items:flex-start;gap:12px;padding:13px 0;border-bottom:1px solid var(--border);}
+.ti:last-child{border-bottom:none;padding-bottom:0;}
+.ti-pts{background:linear-gradient(135deg,var(--navy),var(--navy-light));color:#fff;border-radius:9px;padding:7px 10px;text-align:center;flex-shrink:0;min-width:52px;}
+.ti-pts .tp{font-size:18px;font-weight:800;line-height:1;}
+.ti-pts .tl{font-size:9px;opacity:.8;margin-top:2px;}
+.ti-pts.done{background:linear-gradient(135deg,var(--green),#16a34a);}
+.ti-info{flex:1;}
+.ti-name{font-size:13.5px;font-weight:700;margin-bottom:3px;}
+.ti-desc{font-size:12px;color:var(--muted);margin-bottom:7px;}
+.ti-actions{display:flex;gap:7px;align-items:center;flex-wrap:wrap;}
+.toggle-done{display:inline-flex;align-items:center;gap:5px;padding:6px 12px;border-radius:8px;border:1.5px solid var(--border);background:var(--card);font-size:12px;font-weight:700;cursor:pointer;transition:all .18s;color:var(--muted);}
+.toggle-done.completed{background:var(--green);border-color:var(--green);color:#fff;}
 .empty-state{text-align:center;padding:32px 16px;color:var(--muted);}
-.empty-state .es-icon{font-size:48px;margin-bottom:10px}.empty-state .es-t{font-size:15px;font-weight:700;margin-bottom:5px}.empty-state .es-d{font-size:13px}
-.progress-ring{position:relative;display:inline-flex;align-items:center;justify-content:center;}
-canvas#weekChart{width:100% !important;max-height:180px}
-.report-section{margin-bottom:16px}.report-section h3{font-size:13px;font-weight:800;text-transform:uppercase;letter-spacing:.8px;color:var(--muted);margin-bottom:8px}
+.es-icon{font-size:48px;margin-bottom:10px;}
+.es-t{font-size:15px;font-weight:700;margin-bottom:5px;}
+.es-d{font-size:13px;}
 .pdf-preview{background:#f8fafd;border:2px dashed var(--border);border-radius:10px;padding:20px;text-align:center;margin-bottom:13px;}
-.streak-row{display:flex;gap:5px;flex-wrap:wrap;margin-top:8px;}
-.streak-dot{width:12px;height:12px;border-radius:3px;background:#e8edf5;}
-.streak-dot.on{background:var(--green)}.streak-dot.today{background:var(--gold);outline:2px solid var(--gold-d);}
+.report-row{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--border);}
+.report-row:last-child{border-bottom:none;}
+.report-row-lbl{font-size:13px;font-weight:600;}
+.report-row-val{font-size:13px;font-weight:800;color:var(--navy);font-family:'DM Mono',monospace;}
+.radar-wrap{position:relative;max-height:260px;}
 </style>
 </head>
 <body>
-<div id="hdr"><div class="hd-brand"><div class="hd-logo">RIF<br>SHD</div><div><div class="hd-name">AFGE RIF Shield</div><div class="hd-sub">Solidarity Innovation Group</div></div></div><div class="hd-badge" id="hdr-score">72 / 100</div></div>
+<header id="hdr"><div class="hd-brand"><div class="hd-logo">S</div><div><div class="hd-title">RIF Shield</div><div class="hd-sub">Solidarity Innovation Group</div></div></div><div class="hd-streak" id="hdr-streak">&#128293; <span id="hdr-streak-n">0</span>d</div></header>
 <div id="screens">
 <div class="screen active" id="s-dashboard">
-<div class="hero"><div class="h-row"><div><div class="h-score" id="d-score">72<span class="h-denom">/100</span></div><div class="h-lbl">2026 Performance Rating Score</div></div><div class="h-badge"><div class="ln" id="d-level">4</div><div class="ll">Level</div></div></div><div class="h-next"><span class="h-next-t" id="d-next-txt">Level 5 needs +18 more points</span><span class="h-pts" id="d-next-pts">+18 pts</span></div></div>
-<div class="card"><div class="card-t">&#127942; 2026 Rating Scale</div><div class="lvl-scale"><div class="lvl-box" id="lvl3"><div class="lb-n">3</div><div class="lb-r">70-79</div></div><div class="lvl-box active" id="lvl4"><div class="lb-n">4</div><div class="lb-r">80-89</div></div><div class="lvl-box" id="lvl5"><div class="lb-n">5</div><div class="lb-r">90-100</div></div></div></div>
-<div class="card"><div class="card-t">&#128202; Score Breakdown</div>
-<div class="metric"><div class="m-icon">&#128188;</div><div class="m-info"><div class="m-name"><span>Experience</span><span class="m-pts" id="m-exp">22/30</span></div><div class="bar-bg"><div class="bar-fill bf-blue" id="b-exp" style="width:0%"></div></div></div></div>
-<div class="metric"><div class="m-icon">&#11088;</div><div class="m-info"><div class="m-name"><span>Performance</span><span class="m-pts" id="m-perf">19/25</span></div><div class="bar-bg"><div class="bar-fill bf-gold" id="b-perf" style="width:0%"></div></div></div></div>
-<div class="metric"><div class="m-icon">&#127891;</div><div class="m-info"><div class="m-name"><span>Training</span><span class="m-pts" id="m-train">14/20</span></div><div class="bar-bg"><div class="bar-fill bf-green" id="b-train" style="width:0%"></div></div></div></div>
-<div class="metric"><div class="m-icon">&#127919;</div><div class="m-info"><div class="m-name"><span>Results</span><span class="m-pts" id="m-res">11/15</span></div><div class="bar-bg"><div class="bar-fill bf-orange" id="b-res" style="width:0%"></div></div></div></div>
-<div class="metric"><div class="m-icon">&#129309;</div><div class="m-info"><div class="m-name"><span>Teamwork</span><span class="m-pts" id="m-team">6/10</span></div><div class="bar-bg"><div class="bar-fill bf-purple" id="b-team" style="width:0%"></div></div></div></div>
+<div class="hero-card">
+<div class="hero-top"><div class="hero-ring-wrap">
+<div class="hero-ring"><svg width="80" height="80" viewBox="0 0 80 80"><circle class="ring-bg" cx="40" cy="40" r="34"/><circle class="ring-fg" id="ring-fg" cx="40" cy="40" r="34" stroke-dasharray="213.6" stroke-dashoffset="213.6"/></svg><div class="ring-val"><div class="ring-num" id="ring-num">0</div><div class="ring-den">/100</div></div></div>
+<div class="hero-meta"><div class="hero-level-lbl">Protection Level</div><div class="hero-level-val" id="hero-lv">L1</div><div class="hero-level-sub" id="hero-lv-sub">0 pts &middot; Level 1</div></div>
+</div></div>
+<div class="hero-xp"><div class="hero-xp-labels"><span class="xp-lbl cur" id="xp-lbl-cur">Level 1</span><span class="xp-lbl" id="xp-lbl-next">Level 2 at 60 pts</span></div><div class="xp-bg"><div class="xp-fill" id="xp-fill" style="width:0%"></div></div></div>
 </div>
-<div class="row2"><div class="card"><div class="stat-n" id="d-streak">0</div><div class="stat-l">Day Streak</div></div><div class="card"><div class="stat-n" id="d-entries">0</div><div class="stat-l">Journal Entries</div></div><div class="card"><div class="stat-n" id="d-courses">3</div><div class="stat-l">Courses Done</div></div></div>
-<div class="card"><div class="card-t">&#128197; This Week</div><div class="streak-row" id="streak-dots"></div></div>
-<div class="alert alert-warn"><div class="alert-icon">&#9888;&#65039;</div><div><div class="alert-t">RIF Protection Status</div><div class="alert-d">Reach Level 5 (90pts) for maximum retention protection. You need <strong id="rif-gap">18 more points</strong>.</div></div></div>
-<button class="btn btn-g btn-full" onclick="openLogModal()">&#128221; Log Today&#39;s Accomplishments</button>
+<div class="chips-scroll"><div class="chips-row"><div class="lchip" id="lc1"><span class="lc-n">L1</span><span class="lc-r">0&ndash;59</span><span class="lc-l">Basic</span></div><div class="lchip" id="lc2"><span class="lc-n">L2</span><span class="lc-r">60&ndash;69</span><span class="lc-l">Fair</span></div><div class="lchip" id="lc3"><span class="lc-n">L3</span><span class="lc-r">70&ndash;79</span><span class="lc-l">Good</span></div><div class="lchip" id="lc4"><span class="lc-n">L4</span><span class="lc-r">80&ndash;89</span><span class="lc-l">Strong</span></div><div class="lchip" id="lc5"><span class="lc-n">L5</span><span class="lc-r">90+</span><span class="lc-l">Max</span></div></div></div>
+<div class="vitals-grid">
+<div class="vcard"><div class="vcard-hdr"><div class="vdot" style="background:#3b82f6"></div><div class="vlbl">Experience</div></div><div class="vnum" id="v-exp">0<span class="vden">/30</span></div><div class="vbar-bg"><div class="vbar-fill" id="vb-exp" style="background:#3b82f6;width:0%"></div></div></div>
+<div class="vcard"><div class="vcard-hdr"><div class="vdot" style="background:var(--gold)"></div><div class="vlbl">Performance</div></div><div class="vnum" id="v-perf">0<span class="vden">/25</span></div><div class="vbar-bg"><div class="vbar-fill" id="vb-perf" style="background:var(--gold);width:0%"></div></div></div>
+<div class="vcard"><div class="vcard-hdr"><div class="vdot" style="background:#22c55e"></div><div class="vlbl">Training</div></div><div class="vnum" id="v-train">0<span class="vden">/20</span></div><div class="vbar-bg"><div class="vbar-fill" id="vb-train" style="background:#22c55e;width:0%"></div></div></div>
+<div class="vcard"><div class="vcard-hdr"><div class="vdot" style="background:#ef4444"></div><div class="vlbl">Results</div></div><div class="vnum" id="v-res">0<span class="vden">/15</span></div><div class="vbar-bg"><div class="vbar-fill" id="vb-res" style="background:#ef4444;width:0%"></div></div></div>
+<div class="vcard"><div class="vcard-hdr"><div class="vdot" style="background:#8b5cf6"></div><div class="vlbl">Teamwork</div></div><div class="vnum" id="v-team">0<span class="vden">/10</span></div><div class="vbar-bg"><div class="vbar-fill" id="vb-team" style="background:#8b5cf6;width:0%"></div></div></div>
+<div class="vcard"><div class="vcard-hdr"><div class="vdot" style="background:var(--navy)"></div><div class="vlbl">Total</div></div><div class="vnum" id="v-total">0<span class="vden">/100</span></div><div class="vbar-bg"><div class="vbar-fill" id="vb-total" style="background:var(--navy);width:0%"></div></div></div>
+</div>
+<div class="card"><div class="card-hdr"><span class="card-ttl">Score Profile</span></div><div class="radar-wrap"><canvas id="radarChart"></canvas></div></div>
+<div class="insight-card" id="insight-card"><div class="ins-tag" id="ins-tag">Top Recommendation</div><div class="ins-title" id="ins-title">Loading...</div><div class="ins-body" id="ins-body"></div></div>
+<div class="stats-row"><div class="stat-card"><div class="stat-n" id="d-streak">0</div><div class="stat-l">Day Streak</div></div><div class="stat-card"><div class="stat-n" id="d-entries">0</div><div class="stat-l">Journal Entries</div></div><div class="stat-card"><div class="stat-n" id="d-courses">0</div><div class="stat-l">Courses Done</div></div></div>
+<div class="card"><div class="card-hdr"><span class="card-ttl">This Week</span></div><div class="streak-dots" id="streak-dots"></div></div>
+<div class="alert alert-warn"><div class="alert-icon">&#9888;&#65039;</div><div><div class="alert-t">RIF Protection Status</div><div class="alert-d">Reach Level 5 (90+ pts) for maximum retention protection. You need <strong id="rif-gap">90 more points</strong>.</div></div></div>
+<div class="qa-grid">
+<button class="qa-card" onclick="openLogModal()"><span class="qa-icon">&#128221;</span><div class="qa-title">Log Entry</div><div class="qa-desc">Record today's work</div></button>
+<button class="qa-card" onclick="nav('training')"><span class="qa-icon">&#127891;</span><div class="qa-title">Training</div><div class="qa-desc">Boost your score</div></button>
+<button class="qa-card" onclick="nav('reports')"><span class="qa-icon">&#128196;</span><div class="qa-title">Reports</div><div class="qa-desc">Export PDF packet</div></button>
+<button class="qa-card" onclick="nav('journal')"><span class="qa-icon">&#128200;</span><div class="qa-title">Journal</div><div class="qa-desc">View history</div></button>
+</div>
 </div>
 <div class="screen" id="s-journal">
-<div class="sec-hd"><span class="sec-title">&#128221; Daily Journal</span><button class="btn btn-p btn-sm" onclick="openLogModal()">+ Log Entry</button></div>
-<div class="card"><div class="card-t">&#128200; Weekly Activity</div><canvas id="weekChart" height="160"></canvas></div>
-<div class="card"><div class="card-t">&#128203; This Week Summary</div><div style="display:flex;flex-wrap:wrap;gap:7px" id="j-summary"><span class="chip chip-b">0 entries this week</span></div></div>
-<div class="sec-hd" style="margin-top:4px"><span class="sec-title">Recent Entries</span><span id="j-count" style="font-size:12px;color:var(--muted);font-weight:600"></span></div>
-<div id="journal-list"><div class="empty-state"><div class="es-icon">&#128221;</div><div class="es-t">No entries yet</div><div class="es-d">Tap + Log Entry to record your accomplishments</div></div></div>
+<div class="sec-hd"><span class="sec-title">Daily Journal</span><button class="btn btn-p btn-sm" onclick="openLogModal()">+ Log Entry</button></div>
+<div class="card"><div class="card-hdr"><span class="card-ttl">Weekly Activity</span></div><canvas id="weekChart" height="160"></canvas></div>
+<div class="card"><div class="card-hdr"><span class="card-ttl">Week Summary</span></div><div style="display:flex;flex-wrap:wrap;gap:7px" id="j-summary"></div></div>
+<div class="sec-hd"><span class="sec-title">Recent Entries</span><span id="j-count" style="font-size:12px;color:var(--muted);font-weight:600"></span></div>
+<div id="journal-list"><div class="empty-state"><div class="es-icon">&#128221;</div><div class="es-t">No entries yet</div><div class="es-d">Tap + Log Entry to record your work</div></div></div>
 </div>
 <div class="screen" id="s-training">
-<div class="sec-hd"><span class="sec-title">&#127891; Training Gap Analysis</span></div>
-<div class="alert alert-info"><div class="alert-icon">&#128161;</div><div><div class="alert-t">Training Gap Identified</div><div class="alert-d">Complete recommended courses to boost Training score and improve RIF protection.</div></div></div>
-<div class="hero"><div class="h-row"><div><div class="h-score" id="t-score">14<span class="h-denom">/20</span></div><div class="h-lbl">Training Score</div></div><div class="h-badge"><div class="ln">+6</div><div class="ll">Potential</div></div></div><div class="h-next"><span class="h-next-t">Complete 2 courses for max score</span><span class="h-pts">+6 pts</span></div></div>
-<div class="card"><div class="card-t">&#127775; Recommended Courses</div>
-<div class="ti"><div class="ti-pts"><div class="tp">+4</div><div class="tl">pts</div></div><div class="ti-info"><div class="ti-name">FAC-COR Level I Certification</div><div class="ti-desc">Contracting Officer Representative - Federal Acquisition</div><div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px"><span class="chip chip-r">High Priority</span><span class="chip chip-g">~8 hrs</span></div><a href="https://faitas.army.mil" target="_blank" class="btn btn-p btn-sm" style="text-decoration:none">Start Course &#8599;</a></div></div>
-<div class="ti"><div class="ti-pts"><div class="tp">+3</div><div class="tl">pts</div></div><div class="ti-info"><div class="ti-name">DEIA Workplace Training</div><div class="ti-desc">Diversity, Equity, Inclusion &amp; Accessibility - OPM required</div><div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px"><span class="chip chip-g">Medium</span><span class="chip chip-g">~4 hrs</span></div><a href="https://www.opm.gov" target="_blank" class="btn btn-p btn-sm" style="text-decoration:none">Start Course &#8599;</a></div></div>
-<div class="ti"><div class="ti-pts"><div class="tp">+2</div><div class="tl">pts</div></div><div class="ti-info"><div class="ti-name">Cybersecurity Awareness (FISMA)</div><div class="ti-desc">Annual mandatory training for all federal employees</div><div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px"><span class="chip chip-b">Required</span><span class="chip chip-g">~2 hrs</span></div><a href="https://www.cisa.gov" target="_blank" class="btn btn-p btn-sm" style="text-decoration:none">Start Course &#8599;</a></div></div>
-<div class="ti"><div class="ti-pts"><div class="tp">+2</div><div class="tl">pts</div></div><div class="ti-info"><div class="ti-name">Project Management Fundamentals</div><div class="ti-desc">DAU PM fundamentals for federal project leads</div><div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px"><span class="chip chip-b">Recommended</span><span class="chip chip-g">~6 hrs</span></div><a href="https://www.dau.edu" target="_blank" class="btn btn-p btn-sm" style="text-decoration:none">Start Course &#8599;</a></div></div>
-<div class="ti"><div class="ti-pts"><div class="tp">+2</div><div class="tl">pts</div></div><div class="ti-info"><div class="ti-name">Federal HR Management</div><div class="ti-desc">OPM HR University - personnel management essentials</div><div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px"><span class="chip chip-b">Recommended</span><span class="chip chip-g">~5 hrs</span></div><a href="https://hru.gov" target="_blank" class="btn btn-p btn-sm" style="text-decoration:none">Start Course &#8599;</a></div></div>
-</div>
-<div class="card"><div class="card-t">&#9989; Completed Training</div>
-<div class="ti"><div class="ti-pts" style="background:var(--green)"><div class="tp">&#10003;</div><div class="tl">done</div></div><div class="ti-info"><div class="ti-name">Annual Ethics Training</div><div class="ti-desc">Completed Jan 2026</div><span class="chip chip-gr">+2 pts earned</span></div></div>
-<div class="ti"><div class="ti-pts" style="background:var(--green)"><div class="tp">&#10003;</div><div class="tl">done</div></div><div class="ti-info"><div class="ti-name">EEO Awareness Training</div><div class="ti-desc">Completed Nov 2025</div><span class="chip chip-gr">+2 pts earned</span></div></div>
-<div class="ti"><div class="ti-pts" style="background:var(--green)"><div class="tp">&#10003;</div><div class="tl">done</div></div><div class="ti-info"><div class="ti-name">Telework Policy Training</div><div class="ti-desc">Completed Oct 2025</div><span class="chip chip-gr">+2 pts earned</span></div></div>
-</div>
+<div class="sec-hd"><span class="sec-title">Training</span></div>
+<div class="alert alert-info"><div class="alert-icon">&#128161;</div><div><div class="alert-t">Training Gap Analysis</div><div class="alert-d">Complete recommended courses to boost your Training score and RIF protection standing.</div></div></div>
+<div class="hero-card"><div class="hero-top"><div class="hero-ring-wrap"><div class="hero-ring"><svg width="80" height="80" viewBox="0 0 80 80"><circle class="ring-bg" cx="40" cy="40" r="34"/><circle class="ring-fg" id="t-ring-fg" cx="40" cy="40" r="34" stroke-dasharray="213.6" stroke-dashoffset="213.6"/></svg><div class="ring-val"><div class="ring-num" id="t-ring-num">0</div><div class="ring-den">/20</div></div></div><div class="hero-meta"><div class="hero-level-lbl">Training Score</div><div class="hero-level-val" id="t-score-val">0/20</div><div class="hero-level-sub" id="t-potential">Complete courses to earn pts</div></div></div></div><div class="hero-xp"><div class="xp-bg"><div class="xp-fill" id="t-xp-fill" style="width:0%"></div></div></div></div>
+<div class="card"><div class="card-hdr"><span class="card-ttl">Recommended Courses</span><span class="chip chip-b" id="courses-done-badge">0 done</span></div>
+<div id="course-list">
+<div class="ti" id="ti-fac-cor"><div class="ti-pts" id="tipts-fac-cor"><div class="tp">+4</div><div class="tl">pts</div></div><div class="ti-info"><div class="ti-name">FAC-COR Level I</div><div class="ti-desc">Contracting Officer Representative - Federal Acquisition</div><div class="ti-actions"><a href="https://faitas.army.mil" target="_blank" class="btn btn-o btn-sm">Open Course</a><button class="toggle-done" id="td-fac-cor" onclick="toggleCourse('fac-cor')">&#10003; Mark Done</button></div></div></div>
+<div class="ti" id="ti-deia"><div class="ti-pts" id="tipts-deia"><div class="tp">+3</div><div class="tl">pts</div></div><div class="ti-info"><div class="ti-name">DEIA Workplace Training</div><div class="ti-desc">Diversity, Equity, Inclusion and Accessibility - OPM required</div><div class="ti-actions"><a href="https://www.opm.gov" target="_blank" class="btn btn-o btn-sm">Open Course</a><button class="toggle-done" id="td-deia" onclick="toggleCourse('deia')">&#10003; Mark Done</button></div></div></div>
+<div class="ti" id="ti-cyber"><div class="ti-pts" id="tipts-cyber"><div class="tp">+2</div><div class="tl">pts</div></div><div class="ti-info"><div class="ti-name">Cybersecurity Awareness</div><div class="ti-desc">Annual mandatory FISMA training for federal employees</div><div class="ti-actions"><a href="https://www.cisa.gov" target="_blank" class="btn btn-o btn-sm">Open Course</a><button class="toggle-done" id="td-cyber" onclick="toggleCourse('cyber')">&#10003; Mark Done</button></div></div></div>
+<div class="ti" id="ti-pm"><div class="ti-pts" id="tipts-pm"><div class="tp">+2</div><div class="tl">pts</div></div><div class="ti-info"><div class="ti-name">Project Management Fundamentals</div><div class="ti-desc">DAU PM fundamentals for federal project leads</div><div class="ti-actions"><a href="https://www.dau.edu" target="_blank" class="btn btn-o btn-sm">Open Course</a><button class="toggle-done" id="td-pm" onclick="toggleCourse('pm')">&#10003; Mark Done</button></div></div></div>
+<div class="ti" id="ti-hr"><div class="ti-pts" id="tipts-hr"><div class="tp">+2</div><div class="tl">pts</div></div><div class="ti-info"><div class="ti-name">Federal HR Management</div><div class="ti-desc">OPM HR University - personnel management essentials</div><div class="ti-actions"><a href="https://hru.gov" target="_blank" class="btn btn-o btn-sm">Open Course</a><button class="toggle-done" id="td-hr" onclick="toggleCourse('hr')">&#10003; Mark Done</button></div></div></div>
+<div class="ti" id="ti-ethics"><div class="ti-pts" id="tipts-ethics"><div class="tp">+2</div><div class="tl">pts</div></div><div class="ti-info"><div class="ti-name">Annual Ethics Training</div><div class="ti-desc">Ethics in government service - required annually</div><div class="ti-actions"><a href="https://www.oge.gov" target="_blank" class="btn btn-o btn-sm">Open Course</a><button class="toggle-done" id="td-ethics" onclick="toggleCourse('ethics')">&#10003; Mark Done</button></div></div></div>
+<div class="ti" id="ti-eeo"><div class="ti-pts" id="tipts-eeo"><div class="tp">+1</div><div class="tl">pts</div></div><div class="ti-info"><div class="ti-name">EEO Awareness Training</div><div class="ti-desc">Equal Employment Opportunity awareness training</div><div class="ti-actions"><a href="https://www.eeoc.gov" target="_blank" class="btn btn-o btn-sm">Open Course</a><button class="toggle-done" id="td-eeo" onclick="toggleCourse('eeo')">&#10003; Mark Done</button></div></div></div>
+</div></div>
+<div class="card"><div class="card-hdr"><span class="card-ttl">Completed Courses</span></div><div id="completed-list"><div class="empty-state" style="padding:16px"><div class="es-d">No completed courses yet</div></div></div></div>
 </div>
 <div class="screen" id="s-reports">
-<div class="sec-hd"><span class="sec-title">&#128196; Reports</span></div>
-<div class="alert alert-success"><div class="alert-icon">&#128737;&#65039;</div><div><div class="alert-t">Manager Review Packet Ready</div><div class="alert-d">One-tap PDF with full performance documentation for supervisor review.</div></div></div>
-<div class="card"><div class="card-t">&#128196; Manager Review Packet</div><div class="pdf-preview"><div style="font-size:48px;margin-bottom:8px">&#128196;</div><div style="font-size:15px;font-weight:800;color:var(--blue);margin-bottom:4px">2026 Performance Review</div><div style="font-size:12px;color:var(--muted);margin-bottom:12px">AFGE RIF Shield &bull; Federal Employee Protected Document</div><div style="display:flex;flex-wrap:wrap;gap:6px;justify-content:center;margin-bottom:14px"><span class="chip chip-b">&#128202; Score Summary</span><span class="chip chip-b">&#128221; Journal Log</span><span class="chip chip-b">&#127891; Training Record</span><span class="chip chip-b">&#127919; Key Results</span></div><button class="btn btn-g btn-full" onclick="generatePDF()">&#128196; Generate PDF Report</button></div></div>
-<div class="card"><div class="card-t">&#128202; Current Score Snapshot</div>
-<div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--border)"><span style="font-size:13px;font-weight:600">&#128188; Experience</span><span style="font-size:13px;font-weight:800;color:var(--blue)" id="r-exp">22 / 30</span></div>
-<div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--border)"><span style="font-size:13px;font-weight:600">&#11088; Performance</span><span style="font-size:13px;font-weight:800;color:var(--blue)" id="r-perf">19 / 25</span></div>
-<div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--border)"><span style="font-size:13px;font-weight:600">&#127891; Training</span><span style="font-size:13px;font-weight:800;color:var(--blue)" id="r-train">14 / 20</span></div>
-<div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--border)"><span style="font-size:13px;font-weight:600">&#127919; Results</span><span style="font-size:13px;font-weight:800;color:var(--blue)" id="r-res">11 / 15</span></div>
-<div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0"><span style="font-size:13px;font-weight:600">&#129309; Teamwork</span><span style="font-size:13px;font-weight:800;color:var(--blue)" id="r-team">6 / 10</span></div>
-<div class="divider"></div><div style="display:flex;justify-content:space-between;align-items:center"><span style="font-size:14px;font-weight:800">Total Score</span><span style="font-size:20px;font-weight:900;color:var(--blue)" id="r-total">72 / 100</span></div></div>
-<div class="card"><div class="card-t">&#128240; Export Options</div><div style="display:flex;flex-direction:column;gap:9px"><button class="btn btn-p btn-full" onclick="generatePDF()">&#128196; Full Manager Review PDF</button><button class="btn btn-o btn-full" onclick="exportJSON()">&#128190; Export Data Backup (JSON)</button><button class="btn btn-o btn-full" onclick="shareScore()">&#128279; Share Score Summary</button></div></div>
-<div class="card"><div class="card-t">&#9994; Know Your Rights</div>
-<div class="alert alert-info" style="margin-bottom:9px"><div class="alert-icon">&#128218;</div><div><div class="alert-t">AFGE Member Rights in RIF</div><div class="alert-d">Under 5 CFR Part 351, employees have bump and retreat rights. Your performance rating directly determines retention standing.</div></div></div>
-<div class="alert alert-warn"><div class="alert-icon">&#128226;</div><div><div class="alert-t">Union Contact</div><div class="alert-d">Contact your AFGE local representative before any RIF action. Keep this report for grievance documentation.</div></div></div>
+<div class="sec-hd"><span class="sec-title">Reports</span></div>
+<div class="alert alert-info"><div class="alert-icon">&#128274;</div><div><div class="alert-t">Local Storage Notice</div><div class="alert-d">Your data is stored locally on this device. Use JSON Export to create a backup before clearing browser data.</div></div></div>
+<div class="card"><div class="card-hdr"><span class="card-ttl">Score Snapshot</span><span class="chip chip-b" id="r-level-chip">L1</span></div>
+<div class="report-row"><span class="report-row-lbl">Total Score (100 pts)</span><span class="report-row-val" id="r-total">0</span></div>
+<div class="report-row"><span class="report-row-lbl">Experience (30 pts)</span><span class="report-row-val" id="r-exp">0</span></div>
+<div class="report-row"><span class="report-row-lbl">Performance (25 pts)</span><span class="report-row-val" id="r-perf">0</span></div>
+<div class="report-row"><span class="report-row-lbl">Training (20 pts)</span><span class="report-row-val" id="r-train">0</span></div>
+<div class="report-row"><span class="report-row-lbl">Results (15 pts)</span><span class="report-row-val" id="r-res">0</span></div>
+<div class="report-row"><span class="report-row-lbl">Teamwork (10 pts)</span><span class="report-row-val" id="r-team">0</span></div>
+<div class="report-row"><span class="report-row-lbl">Journal Entries</span><span class="report-row-val" id="r-entries">0</span></div>
+<div class="report-row"><span class="report-row-lbl">Current Streak</span><span class="report-row-val" id="r-streak">0</span></div>
+<div class="report-row"><span class="report-row-lbl">Courses Completed</span><span class="report-row-val" id="r-courses">0</span></div>
 </div>
+<div class="card"><div class="card-hdr"><span class="card-ttl">Export</span></div>
+<button class="btn btn-p btn-full" onclick="generatePDF()" style="margin-bottom:10px">&#128196; Export Manager Review PDF</button>
+<button class="btn btn-o btn-full" onclick="exportJSON()" style="margin-bottom:10px">&#128190; Export JSON Backup</button>
+<button class="btn btn-o btn-full" onclick="shareScore()">&#128279; Share My Score</button>
 </div>
-</div>
-<div class="modal-overlay" id="log-modal" onclick="closeLogModal(event)">
-<div class="modal"><div class="modal-handle"></div>
-<div class="modal-title">&#128221; Log Accomplishment</div>
-<div class="fg"><label class="fl">Task / Accomplishment</label><input type="text" class="fc" id="log-task" placeholder="e.g. Completed quarterly budget review"></div>
-<div class="fg"><label class="fl">Impact Category</label><select class="fc" id="log-impact">
-<option value="performance">&#11088; Performance Impact</option>
-<option value="results">&#127919; Measurable Results</option>
-<option value="teamwork">&#129309; Teamwork / Collaboration</option>
-<option value="training">&#127891; Training / Development</option>
-<option value="experience">&#128188; Experience / Skills</option>
-</select></div>
-<div class="fg"><label class="fl">Hours Spent</label><input type="number" class="fc" id="log-hours" placeholder="2" min="0.5" max="24" step="0.5" value="1"></div>
-<div class="fg"><label class="fl">Notes (optional)</label><textarea class="fc" id="log-notes" placeholder="Details, stakeholders, outcomes..."></textarea></div>
-<div class="fg"><label class="fl">Date</label><input type="date" class="fc" id="log-date"></div>
-<div style="display:flex;gap:9px"><button class="btn btn-o" style="flex:1" onclick="closeLogModal()">Cancel</button><button class="btn btn-g" style="flex:2" onclick="saveLogEntry()">&#128190; Save Entry</button></div>
+<div class="card"><div class="card-hdr"><span class="card-ttl">Know Your Rights</span></div>
+<div class="report-row" style="flex-direction:column;align-items:flex-start;gap:4px;padding:10px 0"><span class="report-row-lbl" style="color:var(--navy)">Retention Standing</span><span style="font-size:12px;color:var(--muted);line-height:1.45">Under 5 CFR Part 351, employees are ranked by tenure, veterans preference, and performance for RIF actions.</span></div>
+<div class="report-row" style="flex-direction:column;align-items:flex-start;gap:4px;padding:10px 0"><span class="report-row-lbl" style="color:var(--navy)">Veterans Preference</span><span style="font-size:12px;color:var(--muted);line-height:1.45">Veterans receive additional retention points - 20 pts for disabled, 10 pts for others (5 CFR 351.501).</span></div>
+<div class="report-row" style="flex-direction:column;align-items:flex-start;gap:4px;padding:10px 0"><span class="report-row-lbl" style="color:var(--navy)">Bump and Retreat Rights</span><span style="font-size:12px;color:var(--muted);line-height:1.45">You may have rights to bump lower-standing employees or retreat to a former position (5 CFR 351.701).</span></div>
+<div class="report-row" style="flex-direction:column;align-items:flex-start;gap:4px;padding:10px 0"><span class="report-row-lbl" style="color:var(--navy)">Appeal Rights</span><span style="font-size:12px;color:var(--muted);line-height:1.45">RIF actions can be appealed to MSPB within 30 days. Union representation available (5 CFR 351.901).</span></div>
+<div class="report-row" style="flex-direction:column;align-items:flex-start;gap:4px;padding:10px 0"><span class="report-row-lbl" style="color:var(--navy)">AFGE Representation</span><span style="font-size:12px;color:var(--muted);line-height:1.45">As an AFGE member, you have the right to union assistance in any RIF proceedings.</span></div>
+<div class="report-row" style="flex-direction:column;align-items:flex-start;gap:4px;padding:10px 0"><span class="report-row-lbl" style="color:var(--navy)">Severance Pay</span><span style="font-size:12px;color:var(--muted);line-height:1.45">Eligible employees separated by RIF may receive severance pay under 5 CFR Part 550, Subpart G.</span></div>
 </div></div>
-<div class="toast" id="toast"></div>
-<nav id="bnav">
-<button class="nb on" id="nb-dashboard" onclick="nav('dashboard')"><div class="nb-i">&#128202;</div>Dashboard</button>
-<button class="nb" id="nb-journal" onclick="nav('journal')"><div class="nb-i">&#128221;</div>Journal</button>
-<button class="nb" id="nb-training" onclick="nav('training')"><div class="nb-i">&#127891;</div>Training</button>
-<button class="nb" id="nb-reports" onclick="nav('reports')"><div class="nb-i">&#128196;</div>Reports</button>
-</nav>
+</div>
 <script>
-const STORE='rif_shield_data';
-const DEFAULTS={scores:{exp:22,perf:19,train:14,res:11,team:6},maxes:{exp:30,perf:25,train:20,res:15,team:10},journal:[],settings:{name:'Federal Employee',agency:'Federal Agency'}};
-function loadData(){try{const d=localStorage.getItem(STORE);return d?JSON.parse(d):JSON.parse(JSON.stringify(DEFAULTS));}catch(e){return JSON.parse(JSON.stringify(DEFAULTS));}}
-function saveData(d){try{localStorage.setItem(STORE,JSON.stringify(d));}catch(e){console.error(e);}}
-let DATA=loadData();
-function totalScore(){const s=DATA.scores;return s.exp+s.perf+s.train+s.res+s.team;}
-function getLevel(sc){return sc>=90?5:sc>=80?4:sc>=70?3:sc>=60?2:1;}
-function ptsToNext(sc){return sc>=90?0:sc>=80?90-sc:sc>=70?80-sc:70-sc;}
-function nextLevelName(sc){return sc>=90?'Maximum reached!':sc>=80?'Level 5 needs':sc>=70?'Level 4 needs':'Level 3 needs';}
-let currentScreen='dashboard';
-function nav(id){document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));document.querySelectorAll('.nb').forEach(b=>b.classList.remove('on'));document.getElementById('s-'+id).classList.add('active');document.getElementById('nb-'+id).classList.add('on');currentScreen=id;if(id==='dashboard')renderDashboard();if(id==='journal')renderJournal();if(id==='reports')renderReports();}
-function toast(msg,ico=''){const t=document.getElementById('toast');t.textContent=(ico?ico+' ':'')+msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2800);}
-function renderDashboard(){
-  const sc=totalScore(),lv=getLevel(sc),gap=ptsToNext(sc),s=DATA.scores,m=DATA.maxes;
-  document.getElementById('d-score').innerHTML=sc+'<span class="h-denom">/100</span>';
-  document.getElementById('d-level').textContent=lv;
-  document.getElementById('hdr-score').textContent=sc+' / 100';
-  document.getElementById('d-next-txt').textContent=gap===0?'Maximum Level 5 reached!':nextLevelName(sc)+' +'+gap+' more points';
-  document.getElementById('d-next-pts').textContent=gap===0?'MAX':'+'+gap+' pts';
-  document.getElementById('rif-gap').textContent=gap===0?'0 pts - max protection achieved':gap+' more points';
-  document.getElementById('m-exp').textContent=s.exp+'/'+m.exp;
-  document.getElementById('m-perf').textContent=s.perf+'/'+m.perf;
-  document.getElementById('m-train').textContent=s.train+'/'+m.train;
-  document.getElementById('m-res').textContent=s.res+'/'+m.res;
-  document.getElementById('m-team').textContent=s.team+'/'+m.team;
-  setTimeout(()=>{
-    document.getElementById('b-exp').style.width=Math.round(s.exp/m.exp*100)+'%';
-    document.getElementById('b-perf').style.width=Math.round(s.perf/m.perf*100)+'%';
-    document.getElementById('b-train').style.width=Math.round(s.train/m.train*100)+'%';
-    document.getElementById('b-res').style.width=Math.round(s.res/m.res*100)+'%';
-    document.getElementById('b-team').style.width=Math.round(s.team/m.team*100)+'%';
-  },80);
-  ['lvl3','lvl4','lvl5'].forEach(id=>document.getElementById(id).classList.remove('active'));
-  const lvid='lvl'+Math.min(5,Math.max(3,lv));const lvEl=document.getElementById(lvid);if(lvEl)lvEl.classList.add('active');
-  document.getElementById('d-entries').textContent=DATA.journal.length;
-  document.getElementById('d-streak').textContent=calcStreak();
-  renderStreakDots();
-}
-function calcStreak(){
-  if(!DATA.journal.length)return 0;
-  const dates=[...new Set(DATA.journal.map(e=>e.date))].sort().reverse();
-  let streak=0;
-  for(let i=0;i<30;i++){const d=new Date();d.setDate(d.getDate()-i);const ds=d.toISOString().split('T')[0];if(dates.includes(ds))streak++;else if(i>0)break;}
+const STORE_KEY='rif_shield_data',COURSE_KEY='rif_courses',OB_KEY='rif_onboarded';
+function defaultData(){return {exp:0,perf:25,train:0,res:0,team:0,journal:[]};} // perf starts at 25 if no data
+function loadData(){try{const r=localStorage.getItem(STORE_KEY);return r?Object.assign(defaultData(),JSON.parse(r)):defaultData();}catch(e){return defaultData();}}
+function saveData(d){localStorage.setItem(STORE_KEY,JSON.stringify(d));}
+function loadCourses(){try{const r=localStorage.getItem(COURSE_KEY);return r?JSON.parse(r):[];}catch(e){return[];}}
+function saveCourses(c){localStorage.setItem(COURSE_KEY,JSON.stringify(c));}
+const MAXES={exp:30,perf:25,train:20,res:15,team:10};
+const LVL_T=[{l:5,min:90,lbl:'Max'},{l:4,min:80,lbl:'Strong'},{l:3,min:70,lbl:'Good'},{l:2,min:60,lbl:'Fair'},{l:1,min:0,lbl:'Basic'}];
+function totalScore(d){return Math.min(d.exp,30)+Math.min(d.perf,25)+Math.min(d.train,20)+Math.min(d.res,15)+Math.min(d.team,10);}
+function getLevel(s){for(const t of LVL_T){if(s>=t.min)return t;}return LVL_T[4];}
+function nextLevelPts(s){for(const p of[60,70,80,90,100]){if(s<p)return p;}return 100;}
+function calcStreak(journal){
+  if(!journal||!journal.length)return 0;
+  const dates=new Set(journal.map(e=>e.date));
+  let streak=0,d=new Date();
+  for(let i=0;i<365;i++){
+    const k=d.toISOString().slice(0,10);
+    if(dates.has(k)){streak++;}
+    else if(i===0){d.setDate(d.getDate()-1);continue;}
+    else{break;}
+    d.setDate(d.getDate()-1);
+  }
   return streak;
 }
-function renderStreakDots(){
-  const el=document.getElementById('streak-dots');if(!el)return;
-  const logged=new Set(DATA.journal.map(e=>e.date));el.innerHTML='';
-  for(let i=6;i>=0;i--){const d=new Date();d.setDate(d.getDate()-i);const ds=d.toISOString().split('T')[0];const dot=document.createElement('div');dot.className='streak-dot'+(logged.has(ds)?' on':'')+(i===0?' today':'');dot.title=ds;el.appendChild(dot);}
+let curScreen='dashboard';
+function nav(sc){
+  curScreen=sc;
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById('s-'+sc).classList.add('active');
+  document.querySelectorAll('.nb').forEach(b=>b.classList.remove('on'));
+  document.getElementById('nb-'+sc).classList.add('on');
+  const fab=document.getElementById('fab');
+  fab.style.display=(sc==='dashboard'||sc==='journal')?'flex':'none';
+  if(sc==='journal')renderJournal();
+  if(sc==='training')renderTraining();
+  if(sc==='reports')renderReports();
 }
-const IMPACT_LABELS={performance:'⭐ Performance',results:'🎯 Results',teamwork:'🤝 Teamwork',training:'🎓 Training',experience:'💼 Experience'};
-function escHtml(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
-function getThisWeekEntries(){const d=new Date();const day=d.getDay();const offset=day===0?-6:1-day;const mon=new Date(d);mon.setDate(d.getDate()+offset);const monStr=mon.toISOString().split('T')[0];return DATA.journal.filter(e=>e.date>=monStr);}
+let radarChart=null,weekChart=null;
+function renderDashboard(){
+  const data=loadData();
+  const score=totalScore(data);
+  const lv=getLevel(score);
+  const nxt=nextLevelPts(score);
+  const circ=213.6,offset=circ-(circ*score/100);
+  const rfg=document.getElementById("ring-fg");
+  if(rfg)rfg.style.strokeDashoffset=offset;
+  const rnum=document.getElementById("ring-num");
+  if(rnum)rnum.textContent=score;
+  const hlv=document.getElementById("hero-lv");
+  if(hlv)hlv.textContent="L"+lv.l;
+  const hsub=document.getElementById("hero-lv-sub");
+  if(hsub)hsub.textContent=score+" pts · Level "+lv.l+" - "+lv.lbl;
+  const prevPts=[0,0,60,70,80,90];
+  const prev=prevPts[lv.l]||0;
+  const pct=score>=90?100:Math.round((score-prev)/(nxt-prev)*100);
+  const xpf=document.getElementById("xp-fill");
+  if(xpf)xpf.style.width=Math.max(0,pct)+"%";
+  const xpc=document.getElementById("xp-lbl-cur");
+  if(xpc)xpc.textContent="Level "+lv.l+" · "+score+" pts";
+  const xpn=document.getElementById("xp-lbl-next");
+  if(xpn)xpn.textContent=score>=90?"Max Level!":"Level "+(lv.l+1)+" at "+nxt+" pts";
+  for(let i=1;i<=5;i++){
+    const chip=document.getElementById("lc"+i);
+    if(chip)chip.className="lchip"+(i<lv.l?" done":i===lv.l?" active":"");
+  }
+  [["exp",data.exp,30,"#3b82f6"],["perf",data.perf,25,"var(--gold)"],["train",data.train,20,"#22c55e"],["res",data.res,15,"#ef4444"],["team",data.team,10,"#8b5cf6"]].forEach(function([k,v,mx]){
+    const el=document.getElementById("v-"+k);
+    if(el)el.innerHTML=v+"<span class='vden'>/"+mx+"</span>";
+    const bar=document.getElementById("vb-"+k);
+    if(bar)bar.style.width=Math.round(v/mx*100)+"%";
+  });
+  const vtot=document.getElementById("v-total");
+  if(vtot)vtot.innerHTML=score+"<span class='vden'>/100</span>";
+  const vbt=document.getElementById("vb-total");
+  if(vbt)vbt.style.width=score+"%";
+  const streak=calcStreak(data.journal);
+  ["d-streak","hdr-streak-n"].forEach(function(id){const e=document.getElementById(id);if(e)e.textContent=streak;});
+  const de=document.getElementById("d-entries");if(de)de.textContent=data.journal.length;
+  const done=loadCourses().length;
+  const dc=document.getElementById("d-courses");if(dc)dc.textContent=done;
+  const cdb=document.getElementById("courses-done-badge");if(cdb)cdb.textContent=done+" done";
+  const gap=Math.max(0,90-score);
+  const rg=document.getElementById("rif-gap");
+  if(rg)rg.textContent=gap>0?gap+" more points to Level 5":"Maximum protection reached!";
+  const dotsCont=document.getElementById("streak-dots");
+  if(dotsCont){
+    const dates=new Set(data.journal.map(function(e){return e.date;}));
+    const today=new Date();
+    dotsCont.innerHTML="";
+    const days=["S","M","T","W","T","F","S"];
+    for(let i=6;i>=0;i--){
+      const dd=new Date(today);dd.setDate(dd.getDate()-i);
+      const k=dd.toISOString().slice(0,10);
+      const wrap=document.createElement("div");
+      wrap.style.cssText="display:flex;flex-direction:column;align-items:center;gap:3px;";
+      const sq=document.createElement("div");
+      sq.className="sdot"+(i===0?" today":dates.has(k)?" on":"");
+      const lbl=document.createElement("span");
+      lbl.style.cssText="font-size:9px;color:var(--muted);font-weight:600;";
+      lbl.textContent=days[dd.getDay()];
+      wrap.appendChild(sq);wrap.appendChild(lbl);dotsCont.appendChild(wrap);
+    }
+  }
+  const vitals=[["exp",data.exp,30],["perf",data.perf,25],["train",data.train,20],["res",data.res,15],["team",data.team,10]];
+  const gaps=vitals.map(function([k,v,mx]){return {k,gap:mx-v};}).sort(function(a,b){return b.gap-a.gap;});
+  const worst=gaps[0].k;
+  const imap={
+    exp:{tag:"Experience Gap",title:"Log more daily work achievements",body:"Your Experience score has room to grow. Log detailed entries for every task, project contribution, and responsibility."},
+    perf:{tag:"Performance Gap",title:"Document your performance outcomes",body:"Record specific achievements, awards, commendations, and positive supervisor feedback to boost Performance."},
+    train:{tag:"Training Gap",title:"Complete recommended training courses",body:"Boost your Training score by completing federal courses. Each certification strengthens your RIF retention standing."},
+    res:{tag:"Results Gap",title:"Record your measurable results",body:"Document deliverables, project completions, cost savings, and quantifiable impacts to boost Results."},
+    team:{tag:"Teamwork Gap",title:"Log your collaborative contributions",body:"Record mentoring activities, cross-team projects, committee work, and collaborative achievements."}
+  };
+  const ins=imap[worst]||imap.exp;
+  const itag=document.getElementById("ins-tag");if(itag)itag.textContent=ins.tag;
+  const ititle=document.getElementById("ins-title");if(ititle)ititle.textContent=ins.title;
+  const ibody=document.getElementById("ins-body");if(ibody)ibody.textContent=ins.body;
+  const radarData=[Math.round(data.exp/30*100),Math.round(data.perf/25*100),Math.round(data.train/20*100),Math.round(data.res/15*100),Math.round(data.team/10*100)];
+  const rctx=document.getElementById("radarChart");
+  if(rctx){
+    if(radarChart){radarChart.data.datasets[0].data=radarData;radarChart.update();}
+    else{radarChart=new Chart(rctx,{type:"radar",data:{labels:["Experience","Performance","Training","Results","Teamwork"],datasets:[{data:radarData,backgroundColor:"rgba(201,162,39,.15)",borderColor:"rgba(201,162,39,.8)",borderWidth:2,pointBackgroundColor:"#c9a227",pointRadius:4}]},options:{responsive:true,scales:{r:{beginAtZero:true,max:100,ticks:{stepSize:25,font:{size:9}},grid:{color:"rgba(15,28,63,.08)"},pointLabels:{font:{size:11,weight:"600"},color:"#6b7a99"}}},plugins:{legend:{display:false}},animation:{duration:800}}});}
+  }
+}
 function renderJournal(){
-  const list=document.getElementById('journal-list'),cnt=document.getElementById('j-count');
-  if(!DATA.journal.length){list.innerHTML='<div class="empty-state"><div class="es-icon">&#128221;</div><div class="es-t">No entries yet</div><div class="es-d">Tap + Log Entry to start tracking</div></div>';cnt.textContent='0 entries';renderWeekChart([]);renderWeekSummary([]);return;}
-  const sorted=[...DATA.journal].sort((a,b)=>b.date.localeCompare(a.date));
-  cnt.textContent=sorted.length+' entr'+(sorted.length===1?'y':'ies');
-  list.innerHTML=sorted.slice(0,25).map(e=>
-    '<div class='je'><div class='je-t'>'+(escHtml(e.task))+'</div><div class='je-m'><span class='chip chip-b'>'+(IMPACT_LABELS[e.impact]||e.impact)+'</span><span class='chip chip-g'>&#128336; '+e.hours+'h</span><span style='color:var(--muted);font-size:11px'>'+e.date+'</span>'+(e.notes?'<div style='font-size:11px;color:var(--muted);margin-top:3px'>'+(escHtml(e.notes))+'</div>':'')+'</div></div>'
-  ).join('');
-  const week=getThisWeekEntries();renderWeekChart(week);renderWeekSummary(week);
+  const data=loadData();
+  const list=document.getElementById("journal-list");if(!list)return;
+  const entries=[...data.journal].reverse();
+  const jc=document.getElementById("j-count");if(jc)jc.textContent=entries.length+" total";
+  const catL={exp:"Experience",perf:"Performance",res:"Results",team:"Teamwork",train:"Training"};
+  if(!entries.length){
+    list.innerHTML="<div class='empty-state'><div class='es-icon'>&#128221;</div><div class='es-t'>No entries yet</div><div class='es-d'>Tap + Log Entry to record your work</div></div>";
+  }else{
+    list.innerHTML=entries.slice(0,30).map(function(e){
+      const cat=catL[e.cat]||e.cat||"General";
+      return "<div class='je'><div class='je-t'>"+e.task+"</div><div class='je-m'><span class='chip chip-b'>"+cat+"</span><span>"+e.date+"</span>"+(e.hours?"<span>"+e.hours+"h</span>":"")+"</div>"+(e.notes?"<div class='je-note'>"+e.notes+"</div>":"")+"</div>";
+    }).join("");
+  }
+  const today=new Date();
+  const weekStart=new Date(today);weekStart.setDate(today.getDate()-today.getDay());weekStart.setHours(0,0,0,0);
+  const thisWeek=data.journal.filter(function(e){return new Date(e.date+"T00:00:00")>=weekStart;});
+  const totalHrs=thisWeek.reduce(function(s,e){return s+(parseFloat(e.hours)||0);},0);
+  const jsumm=document.getElementById("j-summary");
+  if(jsumm)jsumm.innerHTML="<span class='chip chip-b'>"+thisWeek.length+" entries this week</span> <span class='chip chip-g'>"+totalHrs.toFixed(1)+"h logged</span>";
+  const dayNames=["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
+  const cnts=new Array(7).fill(0),hrs=new Array(7).fill(0);
+  thisWeek.forEach(function(e){
+    const day=new Date(e.date+"T00:00:00").getDay();
+    cnts[day]++;hrs[day]+=(parseFloat(e.hours)||0);
+  });
+  const wctx=document.getElementById("weekChart");
+  if(wctx){
+    if(weekChart){weekChart.data.datasets[0].data=cnts;weekChart.data.datasets[1].data=hrs;weekChart.update();}
+    else{weekChart=new Chart(wctx,{type:"bar",data:{labels:dayNames,datasets:[
+      {label:"Entries",data:cnts,backgroundColor:"rgba(15,28,63,.75)",borderRadius:5},
+      {label:"Hours",data:hrs,backgroundColor:"rgba(201,162,39,.65)",borderRadius:5}
+    ]},options:{responsive:true,plugins:{legend:{position:"bottom",labels:{font:{size:10},boxWidth:12}}},scales:{x:{grid:{display:false},ticks:{font:{size:11}}},y:{grid:{color:"rgba(0,0,0,.05)"},ticks:{font:{size:10}},beginAtZero:true}}}});}
+  }
 }
-function renderWeekSummary(week){
-  const el=document.getElementById('j-summary');if(!el)return;
-  if(!week.length){el.innerHTML='<span class="chip chip-b">0 entries this week</span>';return;}
-  const hrs=week.reduce((a,e)=>a+parseFloat(e.hours||0),0);
-  const cats={};week.forEach(e=>{cats[e.impact]=(cats[e.impact]||0)+1;});
-  let html='<span class='chip chip-gr'>&#9989; '+week.length+' entries</span><span class='chip chip-g'>&#128336; '+hrs.toFixed(1)+'h</span>';
-  Object.entries(cats).forEach(([k,v])=>{html+='<span class='chip chip-b'>'+(IMPACT_LABELS[k]||k)+': '+v+'</span>';});
-  el.innerHTML=html;
+function renderTraining(){
+  const data=loadData();const done=loadCourses();
+  const ts=Math.min(data.train,20);
+  const trf=document.getElementById("t-ring-fg");if(trf)trf.style.strokeDashoffset=213.6-(213.6*ts/20);
+  const trn=document.getElementById("t-ring-num");if(trn)trn.textContent=ts;
+  const tsv=document.getElementById("t-score-val");if(tsv)tsv.textContent=ts+"/20";
+  const txf=document.getElementById("t-xp-fill");if(txf)txf.style.width=Math.round(ts/20*100)+"%";
+  const tp=document.getElementById("t-potential");if(tp)tp.textContent=done.length+" course(s) completed";
+  const cdb=document.getElementById("courses-done-badge");if(cdb)cdb.textContent=done.length+" done";
+  const cPts={"fac-cor":4,"deia":3,"cyber":2,"pm":2,"hr":2,"ethics":2,"eeo":1};
+  const cNames={"fac-cor":"FAC-COR Level I","deia":"DEIA Workplace Training","cyber":"Cybersecurity Awareness","pm":"Project Management Fundamentals","hr":"Federal HR Management","ethics":"Annual Ethics Training","eeo":"EEO Awareness Training"};
+  Object.keys(cPts).forEach(function(cid){
+    const btn=document.getElementById("td-"+cid);
+    const pts=document.getElementById("tipts-"+cid);
+    if(done.indexOf(cid)!==-1){
+      if(btn){btn.textContent="✓ Completed";btn.className="toggle-done completed";}
+      if(pts)pts.classList.add("done");
+    }else{
+      if(btn){btn.textContent="✓ Mark Done";btn.className="toggle-done";}
+      if(pts)pts.classList.remove("done");
+    }
+  });
+  const cl=document.getElementById("completed-list");
+  if(cl){
+    if(!done.length){cl.innerHTML="<div class='empty-state' style='padding:16px'><div class='es-d'>No completed courses yet</div></div>";}
+    else{cl.innerHTML=done.map(function(cid){return "<div class='report-row'><span class='report-row-lbl'>"+( cNames[cid]||cid)+"</span><span class='chip chip-gr'>"+cPts[cid]+" pts</span></div>";}).join("");}
+  }
 }
-let weekChart=null;
-function renderWeekChart(entries){
-  const canvas=document.getElementById('weekChart');if(!canvas)return;
-  const days=['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
-  const today=new Date();const dow=today.getDay();const off=dow===0?-6:1-dow;
-  const labels=[],counts=[],hrs=[];
-  for(let i=0;i<7;i++){const d=new Date(today);d.setDate(today.getDate()+off+i);const ds=d.toISOString().split('T')[0];labels.push(days[i]);const de=entries.filter(e=>e.date===ds);counts.push(de.length);hrs.push(parseFloat(de.reduce((a,e)=>a+parseFloat(e.hours||0),0).toFixed(1)));}
-  if(weekChart){weekChart.destroy();weekChart=null;}
-  weekChart=new Chart(canvas,{type:'bar',data:{labels:labels,datasets:[{label:'Entries',data:counts,backgroundColor:'rgba(0,48,135,0.8)',borderRadius:5},{label:'Hours',data:hrs,backgroundColor:'rgba(253,184,19,0.8)',borderRadius:5}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:{font:{size:10},boxWidth:11}}},scales:{y:{beginAtZero:true,ticks:{stepSize:1,font:{size:10}},grid:{color:'rgba(0,0,0,.04)'}},x:{ticks:{font:{size:11}},grid:{display:false}}}}});
+function renderReports(){
+  const data=loadData();const score=totalScore(data);
+  const lv=getLevel(score);const streak=calcStreak(data.journal);const done=loadCourses();
+  const map={"r-total":score+"/100","r-exp":data.exp+"/30","r-perf":data.perf+"/25","r-train":data.train+"/20","r-res":data.res+"/15","r-team":data.team+"/10","r-entries":String(data.journal.length),"r-streak":streak+" days","r-courses":String(done.length)};
+  Object.keys(map).forEach(function(id){const e=document.getElementById(id);if(e)e.textContent=map[id];});
+  const rlc=document.getElementById("r-level-chip");if(rlc)rlc.textContent="L"+lv.l+" - "+lv.lbl;
 }
-function openLogModal(){const today=new Date().toISOString().split('T')[0];document.getElementById('log-date').value=today;document.getElementById('log-task').value='';document.getElementById('log-notes').value='';document.getElementById('log-hours').value='1';document.getElementById('log-modal').classList.add('open');setTimeout(()=>document.getElementById('log-task').focus(),350);}
-function closeLogModal(e){if(!e||e.target===document.getElementById('log-modal'))document.getElementById('log-modal').classList.remove('open');}
-function updateScoreFromEntry(entry){const s=DATA.scores,m=DATA.maxes;if(entry.impact==='performance'&&s.perf<m.perf){s.perf=Math.min(m.perf,Math.round((s.perf+0.5)*10)/10);}else if(entry.impact==='results'&&s.res<m.res){s.res=Math.min(m.res,Math.round((s.res+0.5)*10)/10);}else if(entry.impact==='teamwork'&&s.team<m.team){s.team=Math.min(m.team,Math.round((s.team+0.3)*10)/10);}else if(entry.impact==='training'&&s.train<m.train){s.train=Math.min(m.train,Math.round((s.train+0.5)*10)/10);}else if(entry.impact==='experience'&&s.exp<m.exp){s.exp=Math.min(m.exp,Math.round((s.exp+0.5)*10)/10);}}
-function saveLogEntry(){const task=document.getElementById('log-task').value.trim();if(!task){document.getElementById('log-task').style.borderColor='var(--red)';toast('Please enter a task description');return;}document.getElementById('log-task').style.borderColor='';const entry={id:Date.now(),task:task,impact:document.getElementById('log-impact').value,hours:parseFloat(document.getElementById('log-hours').value)||1,notes:document.getElementById('log-notes').value.trim(),date:document.getElementById('log-date').value||new Date().toISOString().split('T')[0]};DATA.journal.push(entry);updateScoreFromEntry(entry);saveData(DATA);document.getElementById('log-modal').classList.remove('open');toast('Entry saved! Score updated.');if(currentScreen==='dashboard')renderDashboard();else if(currentScreen==='journal')renderJournal();}
-function renderReports(){const s=DATA.scores,m=DATA.maxes;const sc=totalScore();if(document.getElementById('r-exp'))document.getElementById('r-exp').textContent=s.exp+' / '+m.exp;if(document.getElementById('r-perf'))document.getElementById('r-perf').textContent=s.perf+' / '+m.perf;if(document.getElementById('r-train'))document.getElementById('r-train').textContent=s.train+' / '+m.train;if(document.getElementById('r-res'))document.getElementById('r-res').textContent=s.res+' / '+m.res;if(document.getElementById('r-team'))document.getElementById('r-team').textContent=s.team+' / '+m.team;if(document.getElementById('r-total'))document.getElementById('r-total').textContent=sc+' / 100';}
-const metrics=[['Experience',s.exp,m.exp],['Performance',s.perf,m.perf],['Training',s.train,m.train],['Results',s.res,m.res],['Teamwork',s.team,m.team]];
-let y=88;
-doc.setFontSize(11);doc.setFont('helvetica','bold');doc.setTextColor(0,48,135);
-doc.text('Metric',20,y);doc.text('Score',120,y);doc.text('Max',150,y);doc.text('Pct',175,y);
-doc.setDrawColor(0,48,135);doc.line(15,y+2,195,y+2);y+=8;
-metrics.forEach(function(row){var name=row[0],score=row[1],max=row[2],pct=Math.round(score/max*100);doc.setFont('helvetica','normal');doc.setTextColor(30,30,30);doc.setFontSize(10);doc.text(name,20,y);doc.text(String(score),120,y);doc.text(String(max),150,y);doc.text(pct+'%',175,y);doc.setFillColor(230,235,245);doc.rect(20,y+2,120,3,'F');doc.setFillColor(0,48,135);doc.rect(20,y+2,Math.round(pct*1.2),3,'F');y+=10;});
-doc.setDrawColor(220,220,220);doc.line(15,y,195,y);y+=6;
-doc.setFont('helvetica','bold');doc.setFontSize(12);doc.setTextColor(0,48,135);
-doc.text('TOTAL SCORE: '+sc+' / 100  |  LEVEL '+lv,20,y);y+=14;
-doc.setFontSize(14);doc.setFont('helvetica','bold');doc.setTextColor(0,48,135);
-doc.text('Accomplishment Journal',15,y);y+=6;
-doc.setDrawColor(253,184,19);doc.setLineWidth(1.5);doc.line(15,y,195,y);doc.setLineWidth(0.5);y+=8;
-var jentries=DATA.journal.slice(-15);
-if(!jentries.length){doc.setFontSize(10);doc.setTextColor(120,120,120);doc.text('No journal entries recorded yet.',20,y);y+=8;}
-else{jentries.forEach(function(e){if(y>265){doc.addPage();y=20;}doc.setFontSize(9);doc.setFont('helvetica','bold');doc.setTextColor(0,48,135);doc.text(e.date,15,y);doc.setFont('helvetica','normal');doc.setTextColor(30,30,30);var ls=doc.splitTextToSize(e.task,145);doc.text(ls,38,y);doc.setTextColor(120,120,120);doc.setFontSize(8);doc.text(e.impact+' | '+e.hours+'h',38,y+ls.length*4.5);y+=ls.length*4.5+8;});}
-if(y>250){doc.addPage();y=20;}
-doc.setFontSize(12);doc.setFont('helvetica','bold');doc.setTextColor(0,48,135);
-doc.text('Federal Employee Rights - RIF Protections',15,y);y+=6;
-doc.setDrawColor(253,184,19);doc.setLineWidth(1.5);doc.line(15,y,195,y);doc.setLineWidth(0.5);y+=8;
-var rights=['Under 5 CFR Part 351, performance ratings determine retention standing.','Level 5 (90-100): Highest retention priority with bump and retreat rights.','Level 4 (80-89): Strong retention standing. Contact AFGE local for full rights.','Document all accomplishments and training for grievance protection.','AFGE members: Contact your local rep before any RIF action.'];
-rights.forEach(function(r){if(y>278)return;var ls=doc.splitTextToSize('• '+r,175);doc.setFontSize(9);doc.setFont('helvetica','normal');doc.setTextColor(40,40,40);doc.text(ls,18,y);y+=ls.length*5+3;});
-var pc=doc.internal.getNumberOfPages();for(var i=1;i<=pc;i++){doc.setPage(i);doc.setFontSize(8);doc.setTextColor(150,150,150);doc.setDrawColor(220,220,220);doc.line(15,285,195,285);doc.text('AFGE RIF Shield | Solidarity Innovation Group | DEMO VERSION',15,291);doc.text('Page '+i+' of '+pc,185,291);}
-doc.save('AFGE_RIF_Shield_'+new Date().toISOString().split('T')[0]+'.pdf');
-toast('PDF report generated!');
-}catch(err){console.error('PDF error:',err);alert('PDF generation failed: '+err.message);}
+function generatePDF(){
+  try{
+    const jspdfLib=window.jspdf||window.jsPDF;
+    const JsPDF=jspdfLib?jspdfLib.jsPDF:null;
+    if(!JsPDF){showToast("PDF library not loaded yet, please retry");return;}
+    const doc=new JsPDF({orientation:"portrait",unit:"pt",format:"letter"});
+    const data=loadData();
+    const score=totalScore(data);
+    const lv=getLevel(score);
+    const streak=calcStreak(data.journal);
+    const done=loadCourses();
+    const now=new Date().toLocaleDateString("en-US",{year:"numeric",month:"long",day:"numeric"});
+    let y=50;
+    doc.setFillColor(15,28,63);doc.rect(0,0,612,85,"F");
+    doc.setTextColor(201,162,39);doc.setFontSize(22);doc.setFont("helvetica","bold");
+    doc.text("AFGE RIF SHIELD - Manager Review Packet",40,38);
+    doc.setTextColor(200,210,230);doc.setFontSize(10);doc.setFont("helvetica","normal");
+    doc.text("Solidarity Innovation Group  |  Generated: "+now,40,56);
+    doc.text("CONFIDENTIAL - For union representative use",40,70);
+    y=110;
+    doc.setFillColor(240,242,247);doc.roundedRect(40,y,532,80,6,6,"F");
+    doc.setTextColor(15,28,63);doc.setFontSize(32);doc.setFont("helvetica","bold");
+    doc.text(score+"/100",56,y+46);
+    doc.setFontSize(11);doc.setFont("helvetica","normal");doc.setTextColor(107,122,153);
+    doc.text("Protection Score",56,y+62);
+    doc.setFontSize(16);doc.setTextColor(201,162,39);doc.setFont("helvetica","bold");
+    doc.text("Level "+lv.l+" - "+lv.lbl,310,y+32);
+    doc.setFontSize(10);doc.setTextColor(107,122,153);doc.setFont("helvetica","normal");
+    doc.text(streak+" day streak",310,y+48);
+    doc.text(data.journal.length+" journal entries",310,y+62);
+    doc.text(done.length+" courses completed",310,y+76);
+    y+=100;
+    doc.setFontSize(13);doc.setFont("helvetica","bold");doc.setTextColor(15,28,63);
+    doc.text("Score Breakdown",40,y);y+=8;
+    doc.setDrawColor(226,232,240);doc.setLineWidth(1);doc.line(40,y,572,y);y+=18;
+    [["Experience",data.exp,30],["Performance",data.perf,25],["Training",data.train,20],["Results",data.res,15],["Teamwork",data.team,10]].forEach(function(r){
+      doc.setFontSize(11);doc.setFont("helvetica","normal");doc.setTextColor(26,31,46);
+      doc.text(r[0],40,y);doc.text("max "+r[2]+" pts",200,y);
+      doc.setFont("helvetica","bold");doc.text(String(r[1])+" pts",490,y);
+      doc.setFillColor(226,232,240);doc.roundedRect(300,y-10,150,8,2,2,"F");
+      if(r[1]>0){doc.setFillColor(15,28,63);doc.roundedRect(300,y-10,Math.round(r[1]/r[2]*150),8,2,2,"F");}
+      y+=20;
+    });
+    y+=12;
+    doc.setFontSize(13);doc.setFont("helvetica","bold");doc.setTextColor(15,28,63);
+    doc.text("Completed Training",40,y);y+=8;
+    doc.line(40,y,572,y);y+=18;
+    const cNames={"fac-cor":"FAC-COR Level I","deia":"DEIA Workplace Training","cyber":"Cybersecurity Awareness","pm":"Project Management Fundamentals","hr":"Federal HR Management","ethics":"Annual Ethics Training","eeo":"EEO Awareness Training"};
+    if(done.length){done.forEach(function(cid){doc.setFontSize(10);doc.setFont("helvetica","normal");doc.setTextColor(26,31,46);doc.text("✓ "+(cNames[cid]||cid),40,y);y+=16;});}
+    else{doc.setFontSize(10);doc.setTextColor(107,122,153);doc.text("No courses completed yet",40,y);y+=16;}
+    y+=12;
+    if(data.journal.length){
+      doc.setFontSize(13);doc.setFont("helvetica","bold");doc.setTextColor(15,28,63);
+      doc.text("Recent Journal Entries (last 10)",40,y);y+=8;
+      doc.line(40,y,572,y);y+=18;
+      const recent=[...data.journal].reverse().slice(0,10);
+      const catL={exp:"Experience",perf:"Performance",res:"Results",team:"Teamwork",train:"Training"};
+      recent.forEach(function(e){
+        if(y>700){doc.addPage();y=40;}
+        doc.setFontSize(10);doc.setFont("helvetica","bold");doc.setTextColor(26,31,46);
+        doc.text(e.task.substring(0,70),40,y);
+        doc.setFont("helvetica","normal");doc.setTextColor(107,122,153);
+        doc.text(e.date+"  |"+( catL[e.cat]||e.cat)+"  |"+( e.hours||"8")+"h",40,y+13);
+        y+=28;
+      });
+    }
+    y+=10;
+    if(y>680){doc.addPage();y=40;}
+    doc.setFillColor(15,28,63);doc.rect(0,y,612,80,"F");
+    doc.setTextColor(200,210,230);doc.setFontSize(9);doc.setFont("helvetica","normal");
+    doc.text("This document was generated by AFGE RIF Shield. All scores are self-reported and for informational purposes.",40,y+20);
+    doc.text("For official RIF proceedings, consult your AFGE union representative and review 5 CFR Part 351.",40,y+34);
+    doc.setTextColor(201,162,39);doc.text("AFGE RIF Shield - Solidarity Innovation Group",40,y+52);
+    doc.save("AFGE_RIF_Shield_Review_"+new Date().toISOString().slice(0,10)+".pdf");
+    showToast("✓ PDF exported successfully!");
+  }catch(err){
+    console.error("PDF error:",err);
+    showToast("PDF export failed: "+err.message);
+  }
 }
-function exportJSON(){var blob=new Blob([JSON.stringify(DATA,null,2)],{type:'application/json'});var a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='rif_shield_backup_'+new Date().toISOString().split('T')[0]+'.json';document.body.appendChild(a);a.click();document.body.removeChild(a);toast('Data backup downloaded!');}
-function shareScore(){var sc=totalScore(),lv=getLevel(sc),gap=ptsToNext(sc);var msg='AFGE RIF Shield: '+sc+'/100 (Level '+lv+')'+( gap>0?' | +'+gap+' pts to Level '+(lv+1):' | MAX LEVEL!')+' | Tracked with AFGE RIF Shield';if(navigator.share){navigator.share({title:'AFGE RIF Shield',text:msg}).catch(function(){copyToClip(msg);});}else{copyToClip(msg);}}
-function copyToClip(t){if(navigator.clipboard){navigator.clipboard.writeText(t).then(function(){toast('Copied to clipboard!');}).catch(function(){toast('Score: '+totalScore()+'/100');});}else{toast('Score: '+totalScore()+'/100 Level '+getLevel(totalScore()));}}
-if('serviceWorker' in navigator){window.addEventListener('load',function(){navigator.serviceWorker.register('./sw.js').then(function(r){console.log('SW registered:',r.scope);}).catch(function(e){console.log('SW failed:',e);});});}
-document.addEventListener('DOMContentLoaded',function(){DATA=loadData();renderDashboard();document.getElementById('log-modal').addEventListener('touchmove',function(e){e.stopPropagation();},{passive:true});document.addEventListener('keydown',function(e){if(e.key==='Escape')document.getElementById('log-modal').classList.remove('open');});});
+function exportJSON(){
+  const data=loadData();const courses=loadCourses();
+  const blob=new Blob([JSON.stringify({data:data,courses:courses,exported:new Date().toISOString()},null,2)],{type:"application/json"});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement("a");a.href=url;
+  a.download="RIF_Shield_Backup_"+new Date().toISOString().slice(0,10)+".json";
+  document.body.appendChild(a);a.click();document.body.removeChild(a);
+  URL.revokeObjectURL(url);showToast("✓ JSON backup exported!");
+}
+function shareScore(){
+  const data=loadData();const score=totalScore(data);const lv=getLevel(score);
+  const text="My AFGE RIF Shield Score: "+score+"/100 (Level "+lv.l+" - "+lv.lbl+"). Build your federal employment defense! #AFGERIFShield #FederalEmployees";
+  if(navigator.share){navigator.share({title:"AFGE RIF Shield",text:text}).catch(function(){});}
+  else{navigator.clipboard.writeText(text).then(function(){showToast("✓ Copied to clipboard!");}).catch(function(){showToast(text.substring(0,60)+"...");});}
+}
+// ===== ONBOARDING =====
+let obStep=1;
+function showOnboarding(){
+  const m=document.getElementById("ob-modal");if(m)m.classList.add("open");
+  obStep=1;updateObStep();
+}
+function updateObStep(){
+  for(let i=1;i<=3;i++){
+    const s=document.getElementById("ob-s"+i);
+    if(s)s.className="ob-step"+(i===obStep?" active":"");
+    const dot=document.getElementById("od"+i);
+    if(dot)dot.className="ob-dot"+(i===obStep?" active":"");
+  }
+  const btn=document.getElementById("ob-next-btn");
+  if(btn)btn.textContent=obStep<3?"Next →":"✓ Get Started!";
+}
+function obNext(){
+  if(obStep<3){obStep++;updateObStep();}else{obSkip();}
+}
+function obSkip(){
+  localStorage.setItem(OB_KEY,"1");
+  const m=document.getElementById("ob-modal");if(m)m.classList.remove("open");
+}
+document.addEventListener("click",function(e){
+  if(e.target.id==="log-modal")closeLogModal();
+  if(e.target.id==="ob-modal")obSkip();
+});
+function init(){
+  renderDashboard();
+  if(!localStorage.getItem(OB_KEY)){setTimeout(showOnboarding,700);}
+  if("serviceWorker" in navigator){navigator.serviceWorker.register("sw.js").catch(function(){});}
+}
+window.addEventListener("DOMContentLoaded",init);
 </script>
 </body>
 </html>
