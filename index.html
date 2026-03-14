@@ -220,7 +220,7 @@ textarea.form-input{resize:vertical;min-height:72px;}
 </style>
 </head>
 <body>
-<header id="hdr"><div class="hd-brand"><div class="hd-logo">S</div><div><div class="hd-title">RIF Shield</div><div class="hd-sub">Solidarity Innovation Group</div></div></div><div class="hd-streak" id="hdr-streak">&#128293; <span id="hdr-streak-n">0</span>d</div></header>
+<header id="hdr"><div class="hd-brand"><div class="hd-logo">S</div><div><div class="hd-title">RIF Shield</div><div class="hd-sub">Solidarity Innovation Group</div></div></div><div class="hd-streak" id="hdr-streak">&#128293; <span id="hdr-streak-n">0</span>d</div><button id="pwa-install-btn" class="btn-pwa-install" style="display:none" onclick="triggerInstallPrompt()" aria-label="Install RIF Shield app">⬇ Install App</button></header>
 <div id="screens">
 <div class="screen active" id="s-dashboard">
 <div class="hero-card">
@@ -417,6 +417,8 @@ function loadCourses(){try{const r=localStorage.getItem(COURSE_KEY);return r?JSO
 function saveCourses(c){localStorage.setItem(COURSE_KEY,JSON.stringify(c));}
 const MAXES={exp:30,perf: 25,train:20,res:15,team:10};
 const LVL_T=[{l:5,min:90,lbl:'Max'},{l:4,min:80,lbl:'Strong'},{l:3,min:70,lbl:'Good'},{l:2,min:60,lbl:'Fair'},{l:1,min:0,lbl:'Basic'}];
+/** @type {BeforeInstallPromptEvent|null} Captured install prompt event, null if unavailable or already used */
+let deferredInstallPrompt = null;
 // ╔═══════════════════════════════════════════════════════════════════╗
 // ║  MODULE: SCORE ENGINE — scoring, level calculation, streak logic  ║
 // ╚═══════════════════════════════════════════════════════════════════╝
@@ -912,6 +914,53 @@ document.addEventListener('click',function(e){
   }
 });
 // ╔══════════════════════════════════════════════════════════════════════════╗
+// ╔═══════════════════════════════════════════════════════════════════════════╗
+// ║  MODULE: PWA INSTALL — beforeinstallprompt capture and trigger  ║
+// ╚═══════════════════════════════════════════════════════════════════════════╝
+
+/**
+ * Captures the browser's beforeinstallprompt event for deferred use.
+ * Stores the event in deferredInstallPrompt and shows the install button.
+ * Not called on iOS Safari (event never fires — button stays hidden).
+ * @param {BeforeInstallPromptEvent} event - The intercepted install prompt event
+ * @returns {void}
+ */
+function captureInstallPrompt(event) {
+  event.preventDefault();
+  deferredInstallPrompt = event;
+  const btn = document.getElementById('pwa-install-btn');
+  if (btn) btn.style.display = 'block';
+}
+
+/**
+ * Triggers the deferred PWA install prompt dialog.
+ * Hides the install button after triggering regardless of user choice.
+ * Clears deferredInstallPrompt to prevent re-prompt in same session.
+ * @returns {void}
+ */
+function triggerInstallPrompt() {
+  if (!deferredInstallPrompt) return;
+  const btn = document.getElementById('pwa-install-btn');
+  if (btn) btn.style.display = 'none';
+  deferredInstallPrompt.prompt();
+  deferredInstallPrompt.userChoice.then(choice => {
+    console.log('PWA install choice:', choice.outcome);
+    deferredInstallPrompt = null;
+  });
+}
+
+/**
+ * Handles the appinstalled event fired after successful PWA installation.
+ * Hides the install button and clears the deferred prompt reference.
+ * @returns {void}
+ */
+function handleAppInstalled() {
+  deferredInstallPrompt = null;
+  const btn = document.getElementById('pwa-install-btn');
+  if (btn) btn.style.display = 'none';
+  showToast('App installed! Open from your home screen.');
+}
+
 // ║  MODULE: INITIALIZATION — app bootstrap and service worker registration  ║
 // ╚══════════════════════════════════════════════════════════════════════════╝
 document.addEventListener('DOMContentLoaded',function(){
