@@ -2,36 +2,78 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1.0,viewport-fit=cover">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0f1c3f">
+<meta name="description" content="AFGE RIF Shield - Federal Employee Protection Score Tracker">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="RIF Shield">
-<meta name="theme-color" content="#0f1c3f">
-<title>AFGE RIF Shield</title>
-<meta name="description" content="Track your federal employment protection score">
+<title>RIF Shield | AFGE</title>
 <link rel="manifest" href="manifest.json">
-<link rel="apple-touch-icon" href="icons/icon-192.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
-<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<!-- chart.js" integrity sha256 + defer: applied above -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js" integrity="sha256-oCAKeyD2n9LkrKVMxxLRLYBsrMeJWZKfMNdMHPAARBU=" crossorigin="anonymous" defer></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js" integrity="sha512-qZvrmS2ekKPF2mSznTQsxqPgnpkI4DNTlrdUmTzrDgektczlKNRRhy5X5AAOnx5S09ydFYWWNSfcEqDTTHgtNA==" crossorigin="anonymous" defer></script>
 <style>
-:root{--navy:#0f1c3f;--navy-mid:#1a2d5a;--navy-light:#243d75;--gold:#c9a227;--gold-light:#e8be45;--gold-pale:#fdf4dc;--slate:#8fa3cc;--slate-light:#b8c8e0;--bg:#f0f2f7;--card:#ffffff;--border:#e2e8f0;--text:#1a1f2e;--muted:#6b7a99;--green:#22c55e;--amber:#f59e0b;--red:#ef4444;--r-card:14px;--r-hero:18px;--sh-sm:0 1px 3px rgba(15,28,63,.08),0 1px 2px rgba(15,28,63,.05);--sh-md:0 4px 14px rgba(15,28,63,.10),0 2px 4px rgba(15,28,63,.06);--sh-lg:0 10px 32px rgba(15,28,63,.16),0 4px 8px rgba(15,28,63,.08);--header-h:64px;--nav-h:68px;}
-*,*::before,*::after{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
-html,body{height:100%;font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(--text);overscroll-behavior:none;-webkit-font-smoothing:antialiased;}
-body{padding-top:var(--header-h);padding-bottom:calc(var(--nav-h) + 8px);}
-a{text-decoration:none;color:inherit;}button{font-family:inherit;cursor:pointer;border:none;background:none;}
-#hdr{position:fixed;top:0;left:0;right:0;z-index:100;height:var(--header-h);background:var(--navy);display:flex;align-items:center;justify-content:space-between;padding:0 16px;padding-top:env(safe-area-inset-top,0px);box-shadow:0 2px 16px rgba(0,0,0,.28);}
+:root{
+  --navy:#0f1c3f;
+  --navy-mid:#1a2d5a;
+  --navy-light:#2d4a8a;
+  --gold:#c9a227;
+  --gold-light:#e8c547;
+  --gold-pale:#fdf8e7;
+  --slate:#8fa3cc;
+  --slate-light:#b8c8e8;
+  --green:#22c55e;
+  --red:#ef4444;
+  --card:#ffffff;
+  --bg:#f0f4fc;
+  --border:#e2e8f4;
+  --text:#1a2035;
+  --muted:#6b7a99;
+  --r-card:14px;
+  --r-hero:18px;
+  --nav-h:60px;
+  --sh-sm:0 1px 6px rgba(15,28,63,.07);
+  --sh-md:0 4px 18px rgba(15,28,63,.13);
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+html,body{height:100%;background:var(--bg);font-family:'Plus Jakarta Sans',sans-serif;color:var(--text);font-size:14px;line-height:1.4;}
+body{overflow-x:hidden;padding-bottom:calc(var(--nav-h) + env(safe-area-inset-bottom,0px));}
+#screens{padding:12px 14px 8px;max-width:480px;margin:0 auto;}
+.screen{display:none;}
+.screen.active{display:block;animation:fadeIn .22s ease;}
+@keyframes fadeIn{from{opacity:0;transform:translateY(6px);}to{opacity:1;transform:none;}}
+header{position:sticky;top:0;z-index:80;background:var(--navy);padding:12px 16px;display:flex;align-items:center;justify-content:space-between;box-shadow:0 2px 12px rgba(15,28,63,.25);}
 .hd-brand{display:flex;align-items:center;gap:10px;}
-.hd-logo{width:38px;height:38px;border-radius:9px;background:var(--gold);display:flex;align-items:center;justify-content:center;font-family:'DM Mono',monospace;font-size:17px;font-weight:500;color:var(--navy);flex-shrink:0;box-shadow:0 2px 8px rgba(201,162,39,.4);}
-.hd-title{font-size:16px;font-weight:800;color:#fff;line-height:1.15;letter-spacing:-.3px;}
-.hd-sub{font-size:9.5px;font-weight:500;color:var(--slate);margin-top:1px;}
-.hd-streak{display:flex;align-items:center;gap:5px;background:rgba(201,162,39,.15);border:1.5px solid rgba(201,162,39,.4);border-radius:20px;padding:5px 10px;font-family:'DM Mono',monospace;font-size:13px;font-weight:500;color:var(--gold-light);}
-#screens{max-width:520px;margin:0 auto;}
-.screen{display:none;padding:14px 14px 6px;}
-.screen.active{display:block;animation:fadeIn .2s ease;}
-@keyframes fadeIn{from{opacity:0;transform:translateY(6px);}to{opacity:1;transform:translateY(0);}}
+.hd-logo{width:32px;height:32px;background:linear-gradient(135deg,var(--gold),var(--gold-light));border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:17px;font-weight:800;color:var(--navy);font-family:'DM Mono',monospace;flex-shrink:0;}
+.hd-title{font-size:16px;font-weight:800;color:#fff;line-height:1;}
+.hd-sub{font-size:10px;color:var(--slate);font-weight:500;margin-top:2px;}
+.hd-streak{background:rgba(201,162,39,.18);border:1px solid rgba(201,162,39,.35);border-radius:8px;padding:5px 10px;font-size:12px;font-weight:700;color:var(--gold-light);}
+.chip{display:inline-flex;align-items:center;padding:3px 9px;border-radius:6px;font-size:11px;font-weight:700;}
+.chip-b{background:rgba(15,28,63,.08);color:var(--navy);}
+.chip-g{background:rgba(34,197,94,.12);color:#16a34a;}
+.chip-gr{background:rgba(201,162,39,.12);color:#7a5900;}
+.modal-overlay{position:fixed;inset:0;z-index:200;background:rgba(15,28,63,.55);display:flex;align-items:flex-end;justify-content:center;opacity:0;pointer-events:none;transition:opacity .25s;}
+.modal-overlay.open{opacity:1;pointer-events:all;}
+.modal{background:#fff;border-radius:22px 22px 0 0;padding:20px 18px 32px;width:100%;max-width:480px;transform:translateY(100%);transition:transform .3s cubic-bezier(.32,1,.5,1);max-height:90vh;overflow-y:auto;}
+.modal-overlay.open .modal{transform:none;}
+.modal-handle{width:36px;height:4px;background:var(--border);border-radius:2px;margin:0 auto 16px;}
+.modal-title{font-size:17px;font-weight:800;color:var(--navy);margin-bottom:4px;}
+.modal-sub{font-size:12px;color:var(--muted);margin-bottom:18px;}
+.ob-step{display:none;}
+.ob-step.active{display:block;}
+.ob-hero{text-align:center;padding:10px 0 20px;}
+.ob-icon{font-size:52px;margin-bottom:14px;}
+.ob-title{font-size:20px;font-weight:800;color:var(--navy);margin-bottom:10px;}
+.ob-body{font-size:13px;color:var(--muted);line-height:1.6;max-width:300px;margin:0 auto;}
+.ob-dots{display:flex;justify-content:center;gap:8px;margin:16px 0 20px;}
+.ob-dot{width:8px;height:8px;border-radius:50%;background:var(--border);transition:all .2s;}
+.ob-dot.active{background:var(--navy);width:20px;border-radius:4px;}
+.toast{position:fixed;bottom:calc(var(--nav-h) + 12px);left:50%;transform:translateX(-50%) translateY(10px);background:var(--navy);color:#fff;padding:10px 20px;border-radius:10px;font-size:13px;font-weight:600;z-index:300;opacity:0;pointer-events:none;transition:all .25s;white-space:nowrap;box-shadow:var(--sh-md);}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
 .hero-card{background:var(--navy);border-radius:var(--r-hero);padding:20px;margin-bottom:14px;box-shadow:var(--sh-lg);position:relative;overflow:hidden;}
 .hero-card::before{content:'';position:absolute;top:-60px;right:-50px;width:180px;height:180px;background:rgba(143,163,204,.07);border-radius:50%;}
 .hero-card::after{content:'';position:absolute;bottom:-40px;left:10px;width:130px;height:130px;background:rgba(201,162,39,.06);border-radius:50%;}
@@ -44,6 +86,7 @@ a{text-decoration:none;color:inherit;}button{font-family:inherit;cursor:pointer;
 .ring-val{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);text-align:center;}
 .ring-num{font-family:'DM Mono',monospace;font-size:20px;font-weight:500;color:#fff;line-height:1;}
 .ring-den{font-family:'DM Mono',monospace;font-size:10px;color:var(--slate);}
+.hero-meta{display:flex;flex-direction:column;}
 .hero-level-lbl{font-size:11px;font-weight:600;color:var(--slate-light);margin-bottom:3px;}
 .hero-level-val{font-family:'DM Mono',monospace;font-size:30px;font-weight:500;color:#fff;line-height:1;}
 .hero-level-sub{font-size:11px;color:var(--slate);margin-top:3px;}
@@ -93,6 +136,56 @@ a{text-decoration:none;color:inherit;}button{font-family:inherit;cursor:pointer;
 .nb .nb-i{font-size:20px;line-height:1;}
 .nb.on{color:var(--navy);}
 .nb.on .nb-i{filter:drop-shadow(0 0 4px rgba(201,162,39,.6));}
+.card{background:var(--card);border-radius:var(--r-card);box-shadow:var(--sh-sm);margin-bottom:14px;overflow:hidden;}
+.card-hdr{display:flex;align-items:center;justify-content:space-between;padding:14px 14px 0;margin-bottom:10px;}
+.card-ttl{font-size:13px;font-weight:700;color:var(--navy);}
+.sec-hd{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;padding:0 2px;}
+.sec-title{font-size:15px;font-weight:800;color:var(--text);}
+.vitals-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px;}
+.vcard{background:var(--card);border-radius:var(--r-card);padding:12px;box-shadow:var(--sh-sm);}
+.vcard-hdr{display:flex;align-items:center;gap:6px;margin-bottom:6px;}
+.vdot{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
+.vlbl{font-size:11px;font-weight:600;color:var(--muted);}
+.vnum{font-family:'DM Mono',monospace;font-size:22px;font-weight:500;color:var(--text);line-height:1;}
+.vden{font-size:12px;color:var(--muted);font-family:'DM Mono',monospace;}
+.vbar-bg{height:4px;background:var(--border);border-radius:2px;margin-top:8px;overflow:hidden;}
+.vbar-fill{height:100%;border-radius:2px;transition:width 1s cubic-bezier(.4,0,.2,1);}
+.chips-scroll{overflow-x:auto;-webkit-overflow-scrolling:touch;margin-bottom:14px;padding-bottom:4px;scrollbar-width:none;}
+.chips-scroll::-webkit-scrollbar{display:none;}
+.chips-row{display:flex;gap:8px;padding:0 2px;min-width:max-content;}
+.lchip{display:flex;flex-direction:column;align-items:center;padding:8px 14px;border-radius:10px;background:var(--card);border:1.5px solid var(--border);box-shadow:var(--sh-sm);min-width:70px;cursor:default;transition:all .2s;}
+.lchip.done{border-color:var(--navy-light);background:rgba(15,28,63,.06);}
+.lchip.active{border-color:var(--gold);background:var(--gold-pale);box-shadow:0 0 0 2px rgba(201,162,39,.2);}
+.lc-n{font-family:'DM Mono',monospace;font-size:13px;font-weight:500;color:var(--navy);}
+.lchip.active .lc-n{color:var(--gold);}
+.lc-r{font-size:9px;color:var(--muted);margin-top:1px;}
+.lc-l{font-size:9px;font-weight:700;color:var(--slate);margin-top:2px;}
+.lchip.active .lc-l{color:#7a5900;}
+.qa-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px;}
+.qa-card{background:var(--card);border-radius:var(--r-card);padding:16px 12px;box-shadow:var(--sh-sm);display:flex;flex-direction:column;align-items:center;text-align:center;gap:6px;border:1.5px solid var(--border);cursor:pointer;transition:all .18s;}
+.qa-card:active{transform:scale(.97);background:var(--bg);}
+.qa-icon{font-size:28px;line-height:1;}
+.qa-title{font-size:13px;font-weight:700;color:var(--text);}
+.qa-desc{font-size:11px;color:var(--muted);}
+.stats-row{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:14px;}
+.stat-card{background:var(--card);border-radius:var(--r-card);padding:14px 10px;box-shadow:var(--sh-sm);text-align:center;}
+.stat-n{font-family:'DM Mono',monospace;font-size:26px;font-weight:500;color:var(--navy);line-height:1;}
+.stat-l{font-size:10px;font-weight:600;color:var(--muted);margin-top:4px;}
+.insight-card{background:linear-gradient(135deg,var(--navy),var(--navy-mid));border-radius:var(--r-card);padding:16px;margin-bottom:14px;box-shadow:var(--sh-md);}
+.ins-tag{font-size:10px;font-weight:700;color:var(--gold);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px;}
+.ins-title{font-size:15px;font-weight:700;color:#fff;margin-bottom:6px;}
+.ins-body{font-size:12px;color:var(--slate-light);line-height:1.5;}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;border-radius:10px;font-size:13px;font-weight:700;cursor:pointer;border:none;transition:all .18s;padding:10px 16px;font-family:inherit;}
+.btn-p{background:var(--navy);color:#fff;box-shadow:0 2px 8px rgba(15,28,63,.25);}
+.btn-p:active{background:var(--navy-mid);transform:scale(.98);}
+.btn-o{background:transparent;color:var(--navy);border:1.5px solid var(--border);}
+.btn-o:active{background:var(--bg);}
+.btn-full{width:100%;padding:13px 16px;font-size:14px;}
+.btn-sm{padding:6px 12px;font-size:12px;}
+.streak-dots{display:flex;justify-content:space-around;padding:8px 14px 14px;}
+.sdot{width:28px;height:28px;border-radius:8px;background:var(--border);transition:all .3s;}
+.sdot.on{background:var(--green);}
+.sdot.today{background:var(--gold);box-shadow:0 0 0 3px rgba(201,162,39,.25);}
 .je{border-left:3px solid var(--navy);padding:10px 12px;background:#f8fafd;border-radius:0 9px 9px 0;margin-bottom:9px;}
 .je-t{font-size:13px;font-weight:700;margin-bottom:4px;}
 .je-m{font-size:11px;color:var(--muted);display:flex;gap:7px;flex-wrap:wrap;align-items:center;}
@@ -113,12 +206,17 @@ a{text-decoration:none;color:inherit;}button{font-family:inherit;cursor:pointer;
 .es-icon{font-size:48px;margin-bottom:10px;}
 .es-t{font-size:15px;font-weight:700;margin-bottom:5px;}
 .es-d{font-size:13px;}
-.pdf-preview{background:#f8fafd;border:2px dashed var(--border);border-radius:10px;padding:20px;text-align:center;margin-bottom:13px;}
 .report-row{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--border);}
 .report-row:last-child{border-bottom:none;}
 .report-row-lbl{font-size:13px;font-weight:600;}
 .report-row-val{font-size:13px;font-weight:800;color:var(--navy);font-family:'DM Mono',monospace;}
 .radar-wrap{position:relative;max-height:260px;}
+.form-group{margin-bottom:14px;}
+.form-label{font-size:12px;font-weight:700;color:var(--navy);margin-bottom:6px;display:block;}
+.form-input{width:100%;border:1.5px solid var(--border);border-radius:10px;padding:10px 12px;font-size:13px;font-family:inherit;color:var(--text);background:#fff;outline:none;transition:border-color .18s;}
+.form-input:focus{border-color:var(--navy);}
+select.form-input{-webkit-appearance:none;appearance:none;padding-right:28px;}
+textarea.form-input{resize:vertical;min-height:72px;}
 </style>
 </head>
 <body>
@@ -147,10 +245,10 @@ a{text-decoration:none;color:inherit;}button{font-family:inherit;cursor:pointer;
 <div class="card"><div class="card-hdr"><span class="card-ttl">This Week</span></div><div class="streak-dots" id="streak-dots"></div></div>
 <div class="alert alert-warn"><div class="alert-icon">&#9888;&#65039;</div><div><div class="alert-t">RIF Protection Status</div><div class="alert-d">Reach Level 5 (90+ pts) for maximum retention protection. You need <strong id="rif-gap">90 more points</strong>.</div></div></div>
 <div class="qa-grid">
-<button class="qa-card" onclick="openLogModal()"><span class="qa-icon">&#128221;</span><div class="qa-title">Log Entry</div><div class="qa-desc">Record today's work</div></button>
-<button class="qa-card" onclick="nav('training')"><span class="qa-icon">&#127891;</span><div class="qa-title">Training</div><div class="qa-desc">Boost your score</div></button>
-<button class="qa-card" onclick="nav('reports')"><span class="qa-icon">&#128196;</span><div class="qa-title">Reports</div><div class="qa-desc">Export PDF packet</div></button>
-<button class="qa-card" onclick="nav('journal')"><span class="qa-icon">&#128200;</span><div class="qa-title">Journal</div><div class="qa-desc">View history</div></button>
+<button class="qa-card" onclick="openLogModal()"><span class="qa-icon">&#128221;</span><div class="qa-title">Log Entry</div><div class="qa-desc">Record today&#039;s work</div></button>
+<button class="qa-card" onclick="nav(&#39;training&#39;)"><span class="qa-icon">&#127891;</span><div class="qa-title">Training</div><div class="qa-desc">Boost your score</div></button>
+<button class="qa-card" onclick="nav(&#39;reports&#39;)"><span class="qa-icon">&#128196;</span><div class="qa-title">Reports</div><div class="qa-desc">Export PDF packet</div></button>
+<button class="qa-card" onclick="nav(&#39;journal&#39;)"><span class="qa-icon">&#128200;</span><div class="qa-title">Journal</div><div class="qa-desc">View history</div></button>
 </div>
 </div>
 <div class="screen" id="s-journal">
@@ -166,13 +264,13 @@ a{text-decoration:none;color:inherit;}button{font-family:inherit;cursor:pointer;
 <div class="hero-card"><div class="hero-top"><div class="hero-ring-wrap"><div class="hero-ring"><svg width="80" height="80" viewBox="0 0 80 80"><circle class="ring-bg" cx="40" cy="40" r="34"/><circle class="ring-fg" id="t-ring-fg" cx="40" cy="40" r="34" stroke-dasharray="213.6" stroke-dashoffset="213.6"/></svg><div class="ring-val"><div class="ring-num" id="t-ring-num">0</div><div class="ring-den">/20</div></div></div><div class="hero-meta"><div class="hero-level-lbl">Training Score</div><div class="hero-level-val" id="t-score-val">0/20</div><div class="hero-level-sub" id="t-potential">Complete courses to earn pts</div></div></div></div><div class="hero-xp"><div class="xp-bg"><div class="xp-fill" id="t-xp-fill" style="width:0%"></div></div></div></div>
 <div class="card"><div class="card-hdr"><span class="card-ttl">Recommended Courses</span><span class="chip chip-b" id="courses-done-badge">0 done</span></div>
 <div id="course-list">
-<div class="ti" id="ti-fac-cor"><div class="ti-pts" id="tipts-fac-cor"><div class="tp">+4</div><div class="tl">pts</div></div><div class="ti-info"><div class="ti-name">FAC-COR Level I</div><div class="ti-desc">Contracting Officer Representative - Federal Acquisition</div><div class="ti-actions"><a href="https://faitas.army.mil" target="_blank" class="btn btn-o btn-sm">Open Course</a><button class="toggle-done" id="td-fac-cor" onclick="toggleCourse('fac-cor')">&#10003; Mark Done</button></div></div></div>
-<div class="ti" id="ti-deia"><div class="ti-pts" id="tipts-deia"><div class="tp">+3</div><div class="tl">pts</div></div><div class="ti-info"><div class="ti-name">DEIA Workplace Training</div><div class="ti-desc">Diversity, Equity, Inclusion and Accessibility - OPM required</div><div class="ti-actions"><a href="https://www.opm.gov" target="_blank" class="btn btn-o btn-sm">Open Course</a><button class="toggle-done" id="td-deia" onclick="toggleCourse('deia')">&#10003; Mark Done</button></div></div></div>
-<div class="ti" id="ti-cyber"><div class="ti-pts" id="tipts-cyber"><div class="tp">+2</div><div class="tl">pts</div></div><div class="ti-info"><div class="ti-name">Cybersecurity Awareness</div><div class="ti-desc">Annual mandatory FISMA training for federal employees</div><div class="ti-actions"><a href="https://www.cisa.gov" target="_blank" class="btn btn-o btn-sm">Open Course</a><button class="toggle-done" id="td-cyber" onclick="toggleCourse('cyber')">&#10003; Mark Done</button></div></div></div>
-<div class="ti" id="ti-pm"><div class="ti-pts" id="tipts-pm"><div class="tp">+2</div><div class="tl">pts</div></div><div class="ti-info"><div class="ti-name">Project Management Fundamentals</div><div class="ti-desc">DAU PM fundamentals for federal project leads</div><div class="ti-actions"><a href="https://www.dau.edu" target="_blank" class="btn btn-o btn-sm">Open Course</a><button class="toggle-done" id="td-pm" onclick="toggleCourse('pm')">&#10003; Mark Done</button></div></div></div>
-<div class="ti" id="ti-hr"><div class="ti-pts" id="tipts-hr"><div class="tp">+2</div><div class="tl">pts</div></div><div class="ti-info"><div class="ti-name">Federal HR Management</div><div class="ti-desc">OPM HR University - personnel management essentials</div><div class="ti-actions"><a href="https://hru.gov" target="_blank" class="btn btn-o btn-sm">Open Course</a><button class="toggle-done" id="td-hr" onclick="toggleCourse('hr')">&#10003; Mark Done</button></div></div></div>
-<div class="ti" id="ti-ethics"><div class="ti-pts" id="tipts-ethics"><div class="tp">+2</div><div class="tl">pts</div></div><div class="ti-info"><div class="ti-name">Annual Ethics Training</div><div class="ti-desc">Ethics in government service - required annually</div><div class="ti-actions"><a href="https://www.oge.gov" target="_blank" class="btn btn-o btn-sm">Open Course</a><button class="toggle-done" id="td-ethics" onclick="toggleCourse('ethics')">&#10003; Mark Done</button></div></div></div>
-<div class="ti" id="ti-eeo"><div class="ti-pts" id="tipts-eeo"><div class="tp">+1</div><div class="tl">pts</div></div><div class="ti-info"><div class="ti-name">EEO Awareness Training</div><div class="ti-desc">Equal Employment Opportunity awareness training</div><div class="ti-actions"><a href="https://www.eeoc.gov" target="_blank" class="btn btn-o btn-sm">Open Course</a><button class="toggle-done" id="td-eeo" onclick="toggleCourse('eeo')">&#10003; Mark Done</button></div></div></div>
+<div class="ti" id="ti-fac-cor"><div class="ti-pts" id="tipts-fac-cor"><div class="tp">+4</div><div class="tl">pts</div></div><div class="ti-info"><div class="ti-name">FAC-COR Level I</div><div class="ti-desc">Contracting Officer Representative - Federal Acquisition</div><div class="ti-actions"><a href="https://faitas.army.mil" target="_blank" class="btn btn-o btn-sm">Open Course</a><button class="toggle-done" id="td-fac-cor" onclick="toggleCourse(&#39;fac-cor&#39;)">&#10003; Mark Done</button></div></div></div>
+<div class="ti" id="ti-deia"><div class="ti-pts" id="tipts-deia"><div class="tp">+3</div><div class="tl">pts</div></div><div class="ti-info"><div class="ti-name">DEIA Workplace Training</div><div class="ti-desc">Diversity, Equity, Inclusion and Accessibility - OPM required</div><div class="ti-actions"><a href="https://www.opm.gov" target="_blank" class="btn btn-o btn-sm">Open Course</a><button class="toggle-done" id="td-deia" onclick="toggleCourse(&#39;deia&#39;)">&#10003; Mark Done</button></div></div></div>
+<div class="ti" id="ti-cyber"><div class="ti-pts" id="tipts-cyber"><div class="tp">+2</div><div class="tl">pts</div></div><div class="ti-info"><div class="ti-name">Cybersecurity Awareness</div><div class="ti-desc">Annual mandatory FISMA training for federal employees</div><div class="ti-actions"><a href="https://www.cisa.gov" target="_blank" class="btn btn-o btn-sm">Open Course</a><button class="toggle-done" id="td-cyber" onclick="toggleCourse(&#39;cyber&#39;)">&#10003; Mark Done</button></div></div></div>
+<div class="ti" id="ti-pm"><div class="ti-pts" id="tipts-pm"><div class="tp">+2</div><div class="tl">pts</div></div><div class="ti-info"><div class="ti-name">Project Management Fundamentals</div><div class="ti-desc">DAU PM fundamentals for federal project leads</div><div class="ti-actions"><a href="https://www.dau.edu" target="_blank" class="btn btn-o btn-sm">Open Course</a><button class="toggle-done" id="td-pm" onclick="toggleCourse(&#39;pm&#39;)">&#10003; Mark Done</button></div></div></div>
+<div class="ti" id="ti-hr"><div class="ti-pts" id="tipts-hr"><div class="tp">+2</div><div class="tl">pts</div></div><div class="ti-info"><div class="ti-name">Federal HR Management</div><div class="ti-desc">OPM HR University - personnel management essentials</div><div class="ti-actions"><a href="https://hru.gov" target="_blank" class="btn btn-o btn-sm">Open Course</a><button class="toggle-done" id="td-hr" onclick="toggleCourse(&#39;hr&#39;)">&#10003; Mark Done</button></div></div></div>
+<div class="ti" id="ti-ethics"><div class="ti-pts" id="tipts-ethics"><div class="tp">+2</div><div class="tl">pts</div></div><div class="ti-info"><div class="ti-name">Annual Ethics Training</div><div class="ti-desc">Ethics in government service - required annually</div><div class="ti-actions"><a href="https://www.oge.gov" target="_blank" class="btn btn-o btn-sm">Open Course</a><button class="toggle-done" id="td-ethics" onclick="toggleCourse(&#39;ethics&#39;)">&#10003; Mark Done</button></div></div></div>
+<div class="ti" id="ti-eeo"><div class="ti-pts" id="tipts-eeo"><div class="tp">+1</div><div class="tl">pts</div></div><div class="ti-info"><div class="ti-name">EEO Awareness Training</div><div class="ti-desc">Equal Employment Opportunity awareness training</div><div class="ti-actions"><a href="https://www.eeoc.gov" target="_blank" class="btn btn-o btn-sm">Open Course</a><button class="toggle-done" id="td-eeo" onclick="toggleCourse(&#39;eeo&#39;)">&#10003; Mark Done</button></div></div></div>
 </div></div>
 <div class="card"><div class="card-hdr"><span class="card-ttl">Completed Courses</span></div><div id="completed-list"><div class="empty-state" style="padding:16px"><div class="es-d">No completed courses yet</div></div></div></div>
 </div>
@@ -202,20 +300,153 @@ a{text-decoration:none;color:inherit;}button{font-family:inherit;cursor:pointer;
 <div class="report-row" style="flex-direction:column;align-items:flex-start;gap:4px;padding:10px 0"><span class="report-row-lbl" style="color:var(--navy)">Appeal Rights</span><span style="font-size:12px;color:var(--muted);line-height:1.45">RIF actions can be appealed to MSPB within 30 days. Union representation available (5 CFR 351.901).</span></div>
 <div class="report-row" style="flex-direction:column;align-items:flex-start;gap:4px;padding:10px 0"><span class="report-row-lbl" style="color:var(--navy)">AFGE Representation</span><span style="font-size:12px;color:var(--muted);line-height:1.45">As an AFGE member, you have the right to union assistance in any RIF proceedings.</span></div>
 <div class="report-row" style="flex-direction:column;align-items:flex-start;gap:4px;padding:10px 0"><span class="report-row-lbl" style="color:var(--navy)">Severance Pay</span><span style="font-size:12px;color:var(--muted);line-height:1.45">Eligible employees separated by RIF may receive severance pay under 5 CFR Part 550, Subpart G.</span></div>
-</div></div>
 </div>
+</div>
+</div>
+<div class="modal-overlay" id="log-modal">
+<div class="modal">
+<div class="modal-handle"></div>
+<div class="modal-title">Log Entry</div>
+<div class="modal-sub">Record your work to build your protection score</div>
+<div class="form-group"><label class="form-label" for="log-cat">Category</label><select class="form-input" id="log-cat"><option value="exp">Experience</option><option value="perf">Performance</option><option value="res">Results</option><option value="team">Teamwork</option><option value="train">Training</option></select></div>
+<div class="form-group"><label class="form-label" for="log-task">What did you accomplish?</label><input class="form-input" id="log-task" type="text" placeholder="e.g. Led cross-team meeting, delivered project milestone…" maxlength="200"></div>
+<div class="form-group"><label class="form-label" for="log-hours">Hours worked</label><input class="form-input" id="log-hours" type="number" min="0.5" max="24" step="0.5" value="8" placeholder="8"></div>
+<div class="form-group"><label class="form-label" for="log-notes">Additional notes (optional)</label><textarea class="form-input" id="log-notes" placeholder="Context, outcomes, people involved…" maxlength="500"></textarea></div>
+<button class="btn btn-p btn-full" onclick="saveLog()" style="margin-bottom:10px">&#10003; Save Entry</button>
+<button class="btn btn-o btn-full" onclick="closeLogModal()">Cancel</button>
+</div>
+</div>
+<div class="modal-overlay" id="ob-modal">
+<div class="modal">
+<div class="modal-handle"></div>
+<div class="ob-step active" id="ob-s1">
+<div class="ob-hero"><div class="ob-icon">&#127737;&#65039;</div><div class="ob-title">Welcome to RIF Shield</div><div class="ob-body">Your personal defense tool against federal Reduction-in-Force actions. Track your scores, log achievements, and build maximum retention protection.</div></div>
+</div>
+<div class="ob-step" id="ob-s2">
+<div class="ob-hero"><div class="ob-icon">&#128200;</div><div class="ob-title">Build Your Score</div><div class="ob-body">Your protection score is built from 5 dimensions: Experience (30 pts), Performance (25 pts), Training (20 pts), Results (15 pts), and Teamwork (10 pts). Reach Level 5 (90+) for maximum RIF protection.</div></div>
+</div>
+<div class="ob-step" id="ob-s3">
+<div class="ob-hero"><div class="ob-icon">&#128196;</div><div class="ob-title">Document &amp; Export</div><div class="ob-body">Log daily accomplishments, complete recommended training courses, and export a professional Manager Review Packet PDF for your union representative.</div></div>
+</div>
+<div class="ob-dots"><div class="ob-dot active" id="od1"></div><div class="ob-dot" id="od2"></div><div class="ob-dot" id="od3"></div></div>
+<button class="btn btn-p btn-full" id="ob-next-btn" onclick="obNext()">Next &#8594;</button>
+<button class="btn btn-o btn-full" onclick="obSkip()" style="margin-top:8px">Skip intro</button>
+</div>
+</div>
+<button class="fab" id="fab" onclick="openLogModal()" aria-label="Log entry">+</button>
+<nav id="bnav" role="tablist" aria-label="Main navigation">
+<button class="nb on" id="nb-dashboard" onclick="nav(&#39;dashboard&#39;)"><span class="nb-i">&#127968;</span>Dashboard</button>
+<button class="nb" id="nb-journal" onclick="nav(&#39;journal&#39;)"><span class="nb-i">&#128221;</span>Journal</button>
+<button class="nb" id="nb-training" onclick="nav(&#39;training&#39;)"><span class="nb-i">&#127891;</span>Training</button>
+<button class="nb" id="nb-reports" onclick="nav(&#39;reports&#39;)"><span class="nb-i">&#128196;</span>Reports</button>
+</nav>
+<div class="toast" id="toast"></div>
 <script>
+// ╔════════════════════════════════════════════════════════════════════╗
+// ║  MODULE: UTILITIES — string sanitization and notification helpers  ║
+// ╚════════════════════════════════════════════════════════════════════╝
+/**
+ * Sanitizes a string to prevent XSS injection in innerHTML rendering.
+ * Escapes HTML special characters: & < > " '
+ * @param {string} str - The raw user input string to escape
+ * @returns {string} HTML-safe string safe for innerHTML insertion
+ */
+function escapeHtml(str){
+  if(!str)return '';
+  return String(str)
+    .replace(/&/g,'&amp;')
+    .replace(/</g,'&lt;')
+    .replace(/>/g,'&gt;')
+    .replace(/"/g,'&quot;')
+    .replace(/'/g,'&#039;');
+}
+// ╔═════════════════════════════════════════════════════════════════════════════╗
+// ║  MODULE: CONSTANTS & CONFIG — storage keys, score limits, level thresholds  ║
+// ╚═════════════════════════════════════════════════════════════════════════════╝
 const STORE_KEY='rif_shield_data',COURSE_KEY='rif_courses',OB_KEY='rif_onboarded';
-function defaultData(){return {exp:0,perf:25,train:0,res:0,team:0,journal:[]};} // perf starts at 25 if no data
-function loadData(){try{const r=localStorage.getItem(STORE_KEY);return r?Object.assign(defaultData(),JSON.parse(r)):defaultData();}catch(e){return defaultData();}}
-function saveData(d){localStorage.setItem(STORE_KEY,JSON.stringify(d));}
+// ╔════════════════════════════════════════════════════════════════════╗
+// ║  MODULE: STORAGE — localStorage read/write with schema versioning  ║
+// ╚════════════════════════════════════════════════════════════════════╝
+/**
+ * Returns a fresh default data object for new users.
+ * All category scores start at 0.
+ * @returns {{exp:number, perf:number, train:number, res:number, team:number, journal:Array}}
+ */
+function defaultData(){return {exp:0,perf:0,train:0,res:0,team:0,journal:[]};} // all categories start at 0
+/**
+ * Loads user data from localStorage with error fallback.
+ * Falls back to defaultData() if storage is empty, corrupted, or schema mismatch.
+ * Strips internal schema metadata keys (_schema, _saved) before returning.
+ * @returns {{exp:number, perf:number, train:number, res:number, team:number, journal:Array}}
+ */
+function loadData(){
+  try{
+    const r = localStorage.getItem(STORE_KEY);
+    if(!r) return defaultData();
+    const parsed = Object.assign({}, defaultData(), JSON.parse(r));
+    // Strip internal schema keys from data object
+    delete parsed._schema;
+    delete parsed._saved;
+    return parsed;
+  } catch(e){
+    console.warn('RIF Shield: Failed to load data, using defaults', e);
+    return defaultData();
+  }
+}
+/**
+ * Persists user data to localStorage with schema version stamp.
+ * Adds _schema and _saved metadata for future migration support.
+ * @param {Object} d - The full user data object to save
+ * @returns {void}
+ */
+function saveData(d){
+  // Add schema version for future migration support
+  const versioned = Object.assign({}, d, {_schema: 1, _saved: new Date().toISOString()});
+  localStorage.setItem(STORE_KEY, JSON.stringify(versioned));
+}
+/**
+ * Loads completed course IDs array from localStorage.
+ * @returns {string[]} Array of completed course ID strings
+ */
 function loadCourses(){try{const r=localStorage.getItem(COURSE_KEY);return r?JSON.parse(r):[];}catch(e){return[];}}
+/**
+ * Persists completed course IDs array to localStorage.
+ * @param {string[]} c - Array of completed course ID strings
+ * @returns {void}
+ */
 function saveCourses(c){localStorage.setItem(COURSE_KEY,JSON.stringify(c));}
-const MAXES={exp:30,perf:25,train:20,res:15,team:10};
+const MAXES={exp:30,perf: 25,train:20,res:15,team:10};
 const LVL_T=[{l:5,min:90,lbl:'Max'},{l:4,min:80,lbl:'Strong'},{l:3,min:70,lbl:'Good'},{l:2,min:60,lbl:'Fair'},{l:1,min:0,lbl:'Basic'}];
+// ╔═══════════════════════════════════════════════════════════════════╗
+// ║  MODULE: SCORE ENGINE — scoring, level calculation, streak logic  ║
+// ╚═══════════════════════════════════════════════════════════════════╝
+/**
+ * Calculates the total protection score across all 5 categories.
+ * Each category is capped at its maximum to prevent score overflow.
+ * @param {{exp:number, perf:number, train:number, res:number, team:number}} d - User data object
+ * @returns {number} Total score 0–100
+ */
 function totalScore(d){return Math.min(d.exp,30)+Math.min(d.perf,25)+Math.min(d.train,20)+Math.min(d.res,15)+Math.min(d.team,10);}
+/**
+ * Returns the level object for a given score.
+ * Levels: L1 Basic (0-59), L2 Fair (60-69), L3 Good (70-79), L4 Strong (80-89), L5 Max (90+).
+ * @param {number} s - Current total score
+ * @returns {{l:number, min:number, lbl:string}} Level configuration object
+ */
 function getLevel(s){for(const t of LVL_T){if(s>=t.min)return t;}return LVL_T[4];}
+/**
+ * Returns the point threshold for the next level.
+ * Used to display progress gap on dashboard XP bar.
+ * @param {number} s - Current total score
+ * @returns {number} Points needed for next level, or 100 if already at max
+ */
 function nextLevelPts(s){for(const p of[60,70,80,90,100]){if(s<p)return p;}return 100;}
+/**
+ * Calculates the current daily logging streak from journal entries.
+ * A streak is consecutive calendar days with at least one entry.
+ * @param {Array<{date:string}>} journal - Array of journal entries with ISO date strings
+ * @returns {number} Current streak count in days
+ */
 function calcStreak(journal){
   if(!journal||!journal.length)return 0;
   const dates=new Set(journal.map(e=>e.date));
@@ -229,7 +460,29 @@ function calcStreak(journal){
   }
   return streak;
 }
+/**
+ * Displays a non-blocking toast notification above the nav bar.
+ * Auto-dismisses after 2.8 seconds.
+ * @param {string} msg - The message text to display
+ * @returns {void}
+ */
+function showToast(msg){
+  const t=document.getElementById('toast');
+  if(!t)return;
+  t.textContent=msg;
+  t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),2800);
+}
+// ╔════════════════════════════════════════════════════════════════════════╗
+// ║  MODULE: NAVIGATION — screen switching and bottom nav highlight state  ║
+// ╚════════════════════════════════════════════════════════════════════════╝
 let curScreen='dashboard';
+/**
+ * Navigates to a named screen and updates bottom nav highlight.
+ * Controls FAB visibility: shown only on dashboard and journal screens.
+ * @param {string} sc - Screen name: 'dashboard' | 'journal' | 'training' | 'reports'
+ * @returns {void}
+ */
 function nav(sc){
   curScreen=sc;
   document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
@@ -237,296 +490,437 @@ function nav(sc){
   document.querySelectorAll('.nb').forEach(b=>b.classList.remove('on'));
   document.getElementById('nb-'+sc).classList.add('on');
   const fab=document.getElementById('fab');
-  fab.style.display=(sc==='dashboard'||sc==='journal')?'flex':'none';
+  if(fab)fab.style.display=(sc==='dashboard'||sc==='journal')?'flex':'none';
   if(sc==='journal')renderJournal();
   if(sc==='training')renderTraining();
   if(sc==='reports')renderReports();
 }
+// ╔═══════════════════════════════════════════════════════════════════════════════╗
+// ║  MODULE: DASHBOARD — main screen rendering with score ring, vitals, insights  ║
+// ╚═══════════════════════════════════════════════════════════════════════════════╝
 let radarChart=null,weekChart=null;
+/**
+ * Renders the main dashboard screen with score ring, vitals, level chips,
+ * streak dots, quick actions, insight card, and radar/week charts.
+ * Reads live data from localStorage on every call.
+ * @returns {void}
+ */
 function renderDashboard(){
   const data=loadData();
   const score=totalScore(data);
   const lv=getLevel(score);
   const nxt=nextLevelPts(score);
   const circ=213.6,offset=circ-(circ*score/100);
-  const rfg=document.getElementById("ring-fg");
+  const rfg=document.getElementById('ring-fg');
   if(rfg)rfg.style.strokeDashoffset=offset;
-  const rnum=document.getElementById("ring-num");
+  const rnum=document.getElementById('ring-num');
   if(rnum)rnum.textContent=score;
-  const hlv=document.getElementById("hero-lv");
-  if(hlv)hlv.textContent="L"+lv.l;
-  const hsub=document.getElementById("hero-lv-sub");
-  if(hsub)hsub.textContent=score+" pts · Level "+lv.l+" - "+lv.lbl;
+  const hlv=document.getElementById('hero-lv');
+  if(hlv)hlv.textContent='L'+lv.l;
+  const hsub=document.getElementById('hero-lv-sub');
+  if(hsub)hsub.textContent=score+' pts · Level '+lv.l+' - '+lv.lbl;
   const prevPts=[0,0,60,70,80,90];
   const prev=prevPts[lv.l]||0;
   const pct=score>=90?100:Math.round((score-prev)/(nxt-prev)*100);
-  const xpf=document.getElementById("xp-fill");
-  if(xpf)xpf.style.width=Math.max(0,pct)+"%";
-  const xpc=document.getElementById("xp-lbl-cur");
-  if(xpc)xpc.textContent="Level "+lv.l+" · "+score+" pts";
-  const xpn=document.getElementById("xp-lbl-next");
-  if(xpn)xpn.textContent=score>=90?"Max Level!":"Level "+(lv.l+1)+" at "+nxt+" pts";
+  const xpf=document.getElementById('xp-fill');
+  if(xpf)xpf.style.width=Math.max(0,pct)+'%';
+  const xpc=document.getElementById('xp-lbl-cur');
+  if(xpc)xpc.textContent='Level '+lv.l+' · '+score+' pts';
+  const xpn=document.getElementById('xp-lbl-next');
+  if(xpn)xpn.textContent=score>=90?'Max Level!':'Level '+(lv.l+1)+' at '+nxt+' pts';
   for(let i=1;i<=5;i++){
-    const chip=document.getElementById("lc"+i);
-    if(chip)chip.className="lchip"+(i<lv.l?" done":i===lv.l?" active":"");
+    const chip=document.getElementById('lc'+i);
+    if(chip)chip.className='lchip'+(i<lv.l?' done':i===lv.l?' active':'');
   }
-  [["exp",data.exp,30,"#3b82f6"],["perf",data.perf,25,"var(--gold)"],["train",data.train,20,"#22c55e"],["res",data.res,15,"#ef4444"],["team",data.team,10,"#8b5cf6"]].forEach(function([k,v,mx]){
-    const el=document.getElementById("v-"+k);
-    if(el)el.innerHTML=v+"<span class='vden'>/"+mx+"</span>";
-    const bar=document.getElementById("vb-"+k);
-    if(bar)bar.style.width=Math.round(v/mx*100)+"%";
+  [['exp',data.exp,30],['perf',data.perf,25],['train',data.train,20],['res',data.res,15],['team',data.team,10]].forEach(function([k,v,mx]){
+    const el=document.getElementById('v-'+k);
+    if(el)el.innerHTML=v+"<span class='vden'>/"+mx+'</span>';
+    const bar=document.getElementById('vb-'+k);
+    if(bar)bar.style.width=Math.round(v/mx*100)+'%';
   });
-  const vtot=document.getElementById("v-total");
+  const vtot=document.getElementById('v-total');
   if(vtot)vtot.innerHTML=score+"<span class='vden'>/100</span>";
-  const vbt=document.getElementById("vb-total");
-  if(vbt)vbt.style.width=score+"%";
+  const vbt=document.getElementById('vb-total');
+  if(vbt)vbt.style.width=score+'%';
   const streak=calcStreak(data.journal);
-  ["d-streak","hdr-streak-n"].forEach(function(id){const e=document.getElementById(id);if(e)e.textContent=streak;});
-  const de=document.getElementById("d-entries");if(de)de.textContent=data.journal.length;
+  ['d-streak','hdr-streak-n'].forEach(function(id){const e=document.getElementById(id);if(e)e.textContent=streak;});
+  const de=document.getElementById('d-entries');if(de)de.textContent=data.journal.length;
   const done=loadCourses().length;
-  const dc=document.getElementById("d-courses");if(dc)dc.textContent=done;
-  const cdb=document.getElementById("courses-done-badge");if(cdb)cdb.textContent=done+" done";
+  const dc=document.getElementById('d-courses');if(dc)dc.textContent=done;
+  const cdb=document.getElementById('courses-done-badge');if(cdb)cdb.textContent=done+' done';
   const gap=Math.max(0,90-score);
-  const rg=document.getElementById("rif-gap");
-  if(rg)rg.textContent=gap>0?gap+" more points to Level 5":"Maximum protection reached!";
-  const dotsCont=document.getElementById("streak-dots");
+  const rg=document.getElementById('rif-gap');
+  if(rg)rg.textContent=gap>0?gap+' more points to Level 5':'Maximum protection reached!';
+  const dotsCont=document.getElementById('streak-dots');
   if(dotsCont){
     const dates=new Set(data.journal.map(function(e){return e.date;}));
     const today=new Date();
-    dotsCont.innerHTML="";
-    const days=["S","M","T","W","T","F","S"];
+    dotsCont.innerHTML='';
+    const days=['S','M','T','W','T','F','S'];
     for(let i=6;i>=0;i--){
       const dd=new Date(today);dd.setDate(dd.getDate()-i);
       const k=dd.toISOString().slice(0,10);
-      const wrap=document.createElement("div");
-      wrap.style.cssText="display:flex;flex-direction:column;align-items:center;gap:3px;";
-      const sq=document.createElement("div");
-      sq.className="sdot"+(i===0?" today":dates.has(k)?" on":"");
-      const lbl=document.createElement("span");
-      lbl.style.cssText="font-size:9px;color:var(--muted);font-weight:600;";
+      const wrap=document.createElement('div');
+      wrap.style.cssText='display:flex;flex-direction:column;align-items:center;gap:3px;';
+      const sq=document.createElement('div');
+      sq.className='sdot'+(i===0?' today':dates.has(k)?' on':'');
+      const lbl=document.createElement('span');
+      lbl.style.cssText='font-size:9px;color:var(--muted);font-weight:600;';
       lbl.textContent=days[dd.getDay()];
       wrap.appendChild(sq);wrap.appendChild(lbl);dotsCont.appendChild(wrap);
     }
   }
-  const vitals=[["exp",data.exp,30],["perf",data.perf,25],["train",data.train,20],["res",data.res,15],["team",data.team,10]];
-  const gaps=vitals.map(function([k,v,mx]){return {k,gap:mx-v};}).sort(function(a,b){return b.gap-a.gap;});
+  const vitals=[['exp',data.exp,30],['perf',data.perf,25],['train',data.train,20],['res',data.res,15],['team',data.team,10]];
+  const gaps=vitals.map(function([k,v,mx]){return{k,gap:mx-v};}).sort(function(a,b){return b.gap-a.gap;});
   const worst=gaps[0].k;
-  const imap={
-    exp:{tag:"Experience Gap",title:"Log more daily work achievements",body:"Your Experience score has room to grow. Log detailed entries for every task, project contribution, and responsibility."},
-    perf:{tag:"Performance Gap",title:"Document your performance outcomes",body:"Record specific achievements, awards, commendations, and positive supervisor feedback to boost Performance."},
-    train:{tag:"Training Gap",title:"Complete recommended training courses",body:"Boost your Training score by completing federal courses. Each certification strengthens your RIF retention standing."},
-    res:{tag:"Results Gap",title:"Record your measurable results",body:"Document deliverables, project completions, cost savings, and quantifiable impacts to boost Results."},
-    team:{tag:"Teamwork Gap",title:"Log your collaborative contributions",body:"Record mentoring activities, cross-team projects, committee work, and collaborative achievements."}
-  };
-  const ins=imap[worst]||imap.exp;
-  const itag=document.getElementById("ins-tag");if(itag)itag.textContent=ins.tag;
-  const ititle=document.getElementById("ins-title");if(ititle)ititle.textContent=ins.title;
-  const ibody=document.getElementById("ins-body");if(ibody)ibody.textContent=ins.body;
+  const worstGap=gaps[0].gap;
+const entryEst=worst==='train'?'1 course':Math.ceil(worstGap/2)+' entries';
+const imap={
+  exp:{tag:'Experience Gap · '+worstGap+' pts remaining',title:'Log more daily work achievements',body:'You need '+worstGap+' more Experience points (max 30). Each journal entry earns up to 2 pts. Log '+Math.ceil(worstGap/2)+' more entries to close the gap.'},
+  perf:{tag:'Performance Gap · '+worstGap+' pts remaining',title:'Document your performance outcomes',body:'You need '+worstGap+' more Performance points (max 25). Record specific achievements, awards, commendations, and positive supervisor feedback.'},
+  train:{tag:'Training Gap · '+worstGap+' pts remaining',title:'Complete recommended federal training',body:'You need '+worstGap+' more Training points (max 20). Complete '+Math.ceil(worstGap/1.5)+' courses in the Training tab to reach your target.'},
+  res:{tag:'Results Gap · '+worstGap+' pts remaining',title:'Record your measurable results',body:'You need '+worstGap+' more Results points (max 15). Document deliverables, project completions, and quantifiable outcomes from your work.'},
+  team:{tag:'Teamwork Gap · '+worstGap+' pts remaining',title:'Log your collaborative contributions',body:'You need '+worstGap+' more Teamwork points (max 10). Record mentoring, cross-team coordination, and collaborative efforts.'},
+};
+const ins=imap[worst]||imap.exp;
+const itag=document.getElementById('ins-tag');if(itag)itag.textContent=ins.tag;
+const ititle=document.getElementById('ins-title');if(ititle)ititle.textContent=ins.title;
+const ibody=document.getElementById('ins-body');if(ibody)ibody.textContent=ins.body;
   const radarData=[Math.round(data.exp/30*100),Math.round(data.perf/25*100),Math.round(data.train/20*100),Math.round(data.res/15*100),Math.round(data.team/10*100)];
-  const rctx=document.getElementById("radarChart");
+  const rctx=document.getElementById('radarChart');
   if(rctx){
     if(radarChart){radarChart.data.datasets[0].data=radarData;radarChart.update();}
-    else{radarChart=new Chart(rctx,{type:"radar",data:{labels:["Experience","Performance","Training","Results","Teamwork"],datasets:[{data:radarData,backgroundColor:"rgba(201,162,39,.15)",borderColor:"rgba(201,162,39,.8)",borderWidth:2,pointBackgroundColor:"#c9a227",pointRadius:4}]},options:{responsive:true,scales:{r:{beginAtZero:true,max:100,ticks:{stepSize:25,font:{size:9}},grid:{color:"rgba(15,28,63,.08)"},pointLabels:{font:{size:11,weight:"600"},color:"#6b7a99"}}},plugins:{legend:{display:false}},animation:{duration:800}}});}
+    else{radarChart=new Chart(rctx,{type:'radar',data:{labels:['Experience','Performance','Training','Results','Teamwork'],datasets:[{data:radarData,backgroundColor:'rgba(201,162,39,.15)',borderColor:'rgba(201,162,39,.8)',borderWidth:2,pointBackgroundColor:'#c9a227',pointRadius:4}]},options:{responsive:true,scales:{r:{beginAtZero:true,max:100,ticks:{stepSize:25,font:{size:9}},grid:{color:'rgba(15,28,63,.08)'},pointLabels:{font:{size:11,weight:'600'},color:'#6b7a99'}}},plugins:{legend:{display:false}},animation:{duration:800}}});}
   }
 }
+// ╔════════════════════════════════════════════════════════════════════╗
+// ║  MODULE: JOURNAL — entry list rendering and weekly activity chart  ║
+// ╚════════════════════════════════════════════════════════════════════╝
+/**
+ * Renders the journal screen with paginated entry list and weekly bar chart.
+ * All user text is sanitized via escapeHtml() before innerHTML insertion.
+ * Displays empty state UI when no entries exist.
+ * @returns {void}
+ */
 function renderJournal(){
   const data=loadData();
-  const list=document.getElementById("journal-list");if(!list)return;
+  const list=document.getElementById('journal-list');if(!list)return;
   const entries=[...data.journal].reverse();
-  const jc=document.getElementById("j-count");if(jc)jc.textContent=entries.length+" total";
-  const catL={exp:"Experience",perf:"Performance",res:"Results",team:"Teamwork",train:"Training"};
+  const jc=document.getElementById('j-count');if(jc)jc.textContent=entries.length+' total';
+  const catL={exp:'Experience',perf:'Performance',res:'Results',team:'Teamwork',train:'Training'};
   if(!entries.length){
     list.innerHTML="<div class='empty-state'><div class='es-icon'>&#128221;</div><div class='es-t'>No entries yet</div><div class='es-d'>Tap + Log Entry to record your work</div></div>";
   }else{
     list.innerHTML=entries.slice(0,30).map(function(e){
-      const cat=catL[e.cat]||e.cat||"General";
-      return "<div class='je'><div class='je-t'>"+e.task+"</div><div class='je-m'><span class='chip chip-b'>"+cat+"</span><span>"+e.date+"</span>"+(e.hours?"<span>"+e.hours+"h</span>":"")+"</div>"+(e.notes?"<div class='je-note'>"+e.notes+"</div>":"")+"</div>";
-    }).join("");
+      const cat=escapeHtml(catL[e.cat]||e.cat||'General');
+      const task=escapeHtml(e.task);
+      const notes=e.notes?"<div class='je-note'>"+escapeHtml(e.notes)+'</div>':'';
+      const hrs=e.hours?"<span>"+escapeHtml(String(e.hours))+'h</span>':'';
+      return "<div class='je'><div class='je-t'>"+task+"</div><div class='je-m'><span class='chip chip-b'>"+cat+"</span><span>"+escapeHtml(e.date)+'</span>'+hrs+"</div>"+notes+'</div>';
+    }).join('');
   }
   const today=new Date();
   const weekStart=new Date(today);weekStart.setDate(today.getDate()-today.getDay());weekStart.setHours(0,0,0,0);
-  const thisWeek=data.journal.filter(function(e){return new Date(e.date+"T00:00:00")>=weekStart;});
+  const thisWeek=data.journal.filter(function(e){return new Date(e.date+'T00:00:00')>=weekStart;});
   const totalHrs=thisWeek.reduce(function(s,e){return s+(parseFloat(e.hours)||0);},0);
-  const jsumm=document.getElementById("j-summary");
-  if(jsumm)jsumm.innerHTML="<span class='chip chip-b'>"+thisWeek.length+" entries this week</span> <span class='chip chip-g'>"+totalHrs.toFixed(1)+"h logged</span>";
-  const dayNames=["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
+  const jsumm=document.getElementById('j-summary');
+  if(jsumm)jsumm.innerHTML="<span class='chip chip-b'>"+thisWeek.length+" entries this week</span> <span class='chip chip-g'>"+totalHrs.toFixed(1)+'h logged</span>';
+  const dayNames=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
   const cnts=new Array(7).fill(0),hrs=new Array(7).fill(0);
   thisWeek.forEach(function(e){
-    const day=new Date(e.date+"T00:00:00").getDay();
+    const day=new Date(e.date+'T00:00:00').getDay();
     cnts[day]++;hrs[day]+=(parseFloat(e.hours)||0);
   });
-  const wctx=document.getElementById("weekChart");
+  const wctx=document.getElementById('weekChart');
   if(wctx){
     if(weekChart){weekChart.data.datasets[0].data=cnts;weekChart.data.datasets[1].data=hrs;weekChart.update();}
-    else{weekChart=new Chart(wctx,{type:"bar",data:{labels:dayNames,datasets:[
-      {label:"Entries",data:cnts,backgroundColor:"rgba(15,28,63,.75)",borderRadius:5},
-      {label:"Hours",data:hrs,backgroundColor:"rgba(201,162,39,.65)",borderRadius:5}
-    ]},options:{responsive:true,plugins:{legend:{position:"bottom",labels:{font:{size:10},boxWidth:12}}},scales:{x:{grid:{display:false},ticks:{font:{size:11}}},y:{grid:{color:"rgba(0,0,0,.05)"},ticks:{font:{size:10}},beginAtZero:true}}}});}
+    else{weekChart=new Chart(wctx,{type:'bar',data:{labels:dayNames,datasets:[
+      {label:'Entries',data:cnts,backgroundColor:'rgba(15,28,63,.75)',borderRadius:5},
+      {label:'Hours',data:hrs,backgroundColor:'rgba(201,162,39,.65)',borderRadius:5}
+    ]},options:{responsive:true,plugins:{legend:{position:'bottom',labels:{font:{size:10},boxWidth:12}}},scales:{x:{grid:{display:false},ticks:{font:{size:11}}},y:{grid:{color:'rgba(0,0,0,.05)'},ticks:{font:{size:10}},beginAtZero:true}}}});}
   }
 }
+// ╔═══════════════════════════════════════════════════════════════════════╗
+// ║  MODULE: TRAINING — course roadmap rendering and completion toggling  ║
+// ╚═══════════════════════════════════════════════════════════════════════╝
+/**
+ * Renders the training roadmap with course completion status and score ring.
+ * Courses display point values and completion toggle buttons.
+ * @returns {void}
+ */
 function renderTraining(){
   const data=loadData();const done=loadCourses();
   const ts=Math.min(data.train,20);
-  const trf=document.getElementById("t-ring-fg");if(trf)trf.style.strokeDashoffset=213.6-(213.6*ts/20);
-  const trn=document.getElementById("t-ring-num");if(trn)trn.textContent=ts;
-  const tsv=document.getElementById("t-score-val");if(tsv)tsv.textContent=ts+"/20";
-  const txf=document.getElementById("t-xp-fill");if(txf)txf.style.width=Math.round(ts/20*100)+"%";
-  const tp=document.getElementById("t-potential");if(tp)tp.textContent=done.length+" course(s) completed";
-  const cdb=document.getElementById("courses-done-badge");if(cdb)cdb.textContent=done.length+" done";
-  const cPts={"fac-cor":4,"deia":3,"cyber":2,"pm":2,"hr":2,"ethics":2,"eeo":1};
-  const cNames={"fac-cor":"FAC-COR Level I","deia":"DEIA Workplace Training","cyber":"Cybersecurity Awareness","pm":"Project Management Fundamentals","hr":"Federal HR Management","ethics":"Annual Ethics Training","eeo":"EEO Awareness Training"};
+  const trf=document.getElementById('t-ring-fg');if(trf)trf.style.strokeDashoffset=213.6-(213.6*ts/20);
+  const trn=document.getElementById('t-ring-num');if(trn)trn.textContent=ts;
+  const tsv=document.getElementById('t-score-val');if(tsv)tsv.textContent=ts+'/20';
+  const txf=document.getElementById('t-xp-fill');if(txf)txf.style.width=Math.round(ts/20*100)+'%';
+  const tp=document.getElementById('t-potential');if(tp)tp.textContent=done.length+' course(s) completed';
+  const cdb=document.getElementById('courses-done-badge');if(cdb)cdb.textContent=done.length+' done';
+  const cPts={'fac-cor':4,'deia':3,'cyber':2,'pm':2,'hr':2,'ethics':2,'eeo':1};
+  const cNames={'fac-cor':'FAC-COR Level I','deia':'DEIA Workplace Training','cyber':'Cybersecurity Awareness','pm':'Project Management Fundamentals','hr':'Federal HR Management','ethics':'Annual Ethics Training','eeo':'EEO Awareness Training'};
   Object.keys(cPts).forEach(function(cid){
-    const btn=document.getElementById("td-"+cid);
-    const pts=document.getElementById("tipts-"+cid);
+    const btn=document.getElementById('td-'+cid);
+    const pts=document.getElementById('tipts-'+cid);
     if(done.indexOf(cid)!==-1){
-      if(btn){btn.textContent="✓ Completed";btn.className="toggle-done completed";}
-      if(pts)pts.classList.add("done");
+      if(btn){btn.textContent='✓ Completed';btn.className='toggle-done completed';}
+      if(pts)pts.classList.add('done');
     }else{
-      if(btn){btn.textContent="✓ Mark Done";btn.className="toggle-done";}
-      if(pts)pts.classList.remove("done");
+      if(btn){btn.textContent='✓ Mark Done';btn.className='toggle-done';}
+      if(pts)pts.classList.remove('done');
     }
   });
-  const cl=document.getElementById("completed-list");
+  const cl=document.getElementById('completed-list');
   if(cl){
     if(!done.length){cl.innerHTML="<div class='empty-state' style='padding:16px'><div class='es-d'>No completed courses yet</div></div>";}
-    else{cl.innerHTML=done.map(function(cid){return "<div class='report-row'><span class='report-row-lbl'>"+( cNames[cid]||cid)+"</span><span class='chip chip-gr'>"+cPts[cid]+" pts</span></div>";}).join("");}
+    else{cl.innerHTML=done.map(function(cid){
+      return "<div class='report-row'><span class='report-row-lbl'>"+escapeHtml(cNames[cid]||cid)+"</span><span class='chip chip-gr'>"+escapeHtml(String(cPts[cid]||0))+' pts</span></div>';
+    }).join('');}
   }
 }
+/**
+ * Toggles course completion status and persists to localStorage.
+ * Recalculates training score and triggers dashboard re-render.
+ * @param {string} cid - Course ID string (e.g. 'fac-cor', 'cyber')
+ * @returns {void}
+ */
+function toggleCourse(cid){
+  const done=loadCourses();
+  const cPts={'fac-cor':4,'deia':3,'cyber':2,'pm':2,'hr':2,'ethics':2,'eeo':1};
+  const idx=done.indexOf(cid);
+  let data=loadData();
+  if(idx===-1){
+    done.push(cid);
+    data.train=Math.min(20,data.train+(cPts[cid]||0));
+    showToast('✓ Course marked complete! +'+( cPts[cid]||0)+' pts');
+  }else{
+    done.splice(idx,1);
+    data.train=Math.max(0,data.train-(cPts[cid]||0));
+    showToast('Course unmarked');
+  }
+  saveCourses(done);
+  saveData(data);
+  renderTraining();
+  renderDashboard();
+}
+// ╔═════════════════════════════════════════════════════════════╗
+// ║  MODULE: REPORTS — score summary rendering and data export  ║
+// ╚═════════════════════════════════════════════════════════════╝
+/**
+ * Renders the reports screen with score summary and export action buttons.
+ * Shows all category point breakdowns and streak/entry counts.
+ * @returns {void}
+ */
 function renderReports(){
   const data=loadData();const score=totalScore(data);
   const lv=getLevel(score);const streak=calcStreak(data.journal);const done=loadCourses();
-  const map={"r-total":score+"/100","r-exp":data.exp+"/30","r-perf":data.perf+"/25","r-train":data.train+"/20","r-res":data.res+"/15","r-team":data.team+"/10","r-entries":String(data.journal.length),"r-streak":streak+" days","r-courses":String(done.length)};
+  const map={'r-total':score+'/100','r-exp':data.exp+'/30','r-perf':data.perf+'/25','r-train':data.train+'/20','r-res':data.res+'/15','r-team':data.team+'/10','r-entries':String(data.journal.length),'r-streak':streak+' days','r-courses':String(done.length)};
   Object.keys(map).forEach(function(id){const e=document.getElementById(id);if(e)e.textContent=map[id];});
-  const rlc=document.getElementById("r-level-chip");if(rlc)rlc.textContent="L"+lv.l+" - "+lv.lbl;
+  const rlc=document.getElementById('r-level-chip');if(rlc)rlc.textContent='L'+lv.l+' - '+lv.lbl;
+}
+// ╔════════════════════════════════════════════════════════════════════════╗
+// ║  MODULE: LOG MODAL — entry form open/close/save with input validation  ║
+// ╚════════════════════════════════════════════════════════════════════════╝
+/**
+ * Opens the log entry modal bottom sheet and focuses the task input field.
+ * @returns {void}
+ */
+function openLogModal(){
+  const m=document.getElementById('log-modal');
+  if(m)m.classList.add('open');
+  setTimeout(function(){const t=document.getElementById('log-task');if(t)t.focus();},200);
+}
+/**
+ * Closes the log entry modal bottom sheet.
+ * @returns {void}
+ */
+function closeLogModal(){
+  const m=document.getElementById('log-modal');
+  if(m)m.classList.remove('open');
+}
+/**
+ * Validates and saves a new journal entry from the log modal form.
+ * Validation: task min 3 chars, max 500; hours 0.25-24; notes max 1000.
+ * Applies category-specific point values and triggers score recalculation.
+ * Sanitizes all user input via escapeHtml() before storage.
+ * @returns {void}
+ */
+function saveLog(){
+  // Validate required fields
+  const taskEl  = document.getElementById('log-task');
+  const catEl   = document.getElementById('log-cat');
+  const hoursEl = document.getElementById('log-hours');
+  const notesEl = document.getElementById('log-notes');
+  const task  = taskEl  ? taskEl.value.trim()  : '';
+  const cat   = catEl   ? catEl.value          : 'exp';
+  const hours = parseFloat(hoursEl ? hoursEl.value : 8);
+  const notes = notesEl ? notesEl.value.trim() : '';
+  if(!task || task.length < 3){
+    showToast('Please describe your task (min 3 characters)');
+    return;
+  }
+  if(task.length > 500){
+    showToast('Task description too long (max 500 characters)');
+    return;
+  }
+  if(!cat){
+    showToast('Please select a category');
+    return;
+  }
+  if(isNaN(hours) || hours < 0.25 || hours > 24){
+    showToast('Hours must be between 0.25 and 24');
+    return;
+  }
+  if(notes && notes.length > 1000){
+    showToast('Notes too long (max 1000 characters)');
+    return;
+  }
+  const catPts = {exp:2, perf:2, res:2, team:1, train:1};
+  const pts = catPts[cat] || 1;
+  const data = loadData();
+  const mx = {exp:30, perf: 25, train:20, res:15, team:10};
+  data[cat] = Math.min(mx[cat] || 30, data[cat] + pts);
+  data.journal.push({
+    date:  new Date().toISOString().slice(0,10),
+    cat:   cat,
+    task:  task,
+    hours: hours,
+    notes: notes,
+    ts:    Date.now()
+  });
+  saveData(data);
+  if(taskEl)  taskEl.value  = '';
+  if(notesEl) notesEl.value = '';
+  if(hoursEl) hoursEl.value = '8';
+  closeLogModal();
+  renderDashboard();
+  showToast('✓ Entry saved! +' + pts + ' pts');
 }
 function generatePDF(){
   try{
-    const jspdfLib=window.jspdf||window.jsPDF;
-    const JsPDF=jspdfLib?jspdfLib.jsPDF:null;
-    if(!JsPDF){showToast("PDF library not loaded yet, please retry");return;}
-    const doc=new JsPDF({orientation:"portrait",unit:"pt",format:"letter"});
-    const data=loadData();
-    const score=totalScore(data);
-    const lv=getLevel(score);
-    const streak=calcStreak(data.journal);
-    const done=loadCourses();
-    const now=new Date().toLocaleDateString("en-US",{year:"numeric",month:"long",day:"numeric"});
-    let y=50;
-    doc.setFillColor(15,28,63);doc.rect(0,0,612,85,"F");
-    doc.setTextColor(201,162,39);doc.setFontSize(22);doc.setFont("helvetica","bold");
-    doc.text("AFGE RIF SHIELD - Manager Review Packet",40,38);
-    doc.setTextColor(200,210,230);doc.setFontSize(10);doc.setFont("helvetica","normal");
-    doc.text("Solidarity Innovation Group  |  Generated: "+now,40,56);
-    doc.text("CONFIDENTIAL - For union representative use",40,70);
-    y=110;
-    doc.setFillColor(240,242,247);doc.roundedRect(40,y,532,80,6,6,"F");
-    doc.setTextColor(15,28,63);doc.setFontSize(32);doc.setFont("helvetica","bold");
-    doc.text(score+"/100",56,y+46);
-    doc.setFontSize(11);doc.setFont("helvetica","normal");doc.setTextColor(107,122,153);
-    doc.text("Protection Score",56,y+62);
-    doc.setFontSize(16);doc.setTextColor(201,162,39);doc.setFont("helvetica","bold");
-    doc.text("Level "+lv.l+" - "+lv.lbl,310,y+32);
-    doc.setFontSize(10);doc.setTextColor(107,122,153);doc.setFont("helvetica","normal");
-    doc.text(streak+" day streak",310,y+48);
-    doc.text(data.journal.length+" journal entries",310,y+62);
-    doc.text(done.length+" courses completed",310,y+76);
-    y+=100;
-    doc.setFontSize(13);doc.setFont("helvetica","bold");doc.setTextColor(15,28,63);
-    doc.text("Score Breakdown",40,y);y+=8;
-    doc.setDrawColor(226,232,240);doc.setLineWidth(1);doc.line(40,y,572,y);y+=18;
-    [["Experience",data.exp,30],["Performance",data.perf,25],["Training",data.train,20],["Results",data.res,15],["Teamwork",data.team,10]].forEach(function(r){
-      doc.setFontSize(11);doc.setFont("helvetica","normal");doc.setTextColor(26,31,46);
-      doc.text(r[0],40,y);doc.text("max "+r[2]+" pts",200,y);
-      doc.setFont("helvetica","bold");doc.text(String(r[1])+" pts",490,y);
-      doc.setFillColor(226,232,240);doc.roundedRect(300,y-10,150,8,2,2,"F");
-      if(r[1]>0){doc.setFillColor(15,28,63);doc.roundedRect(300,y-10,Math.round(r[1]/r[2]*150),8,2,2,"F");}
-      y+=20;
+    const jsPDF=window.jspdf&&window.jspdf.jsPDF;
+    if(!jsPDF){showToast('PDF library not loaded. Check your connection.');return;}
+    const data=loadData();const score=totalScore(data);const lv=getLevel(score);const streak=calcStreak(data.journal);const done=loadCourses();
+    const doc=new jsPDF({orientation:'portrait',unit:'mm',format:'a4'});
+    const navy=[15,28,63],gold=[201,162,39],white=[255,255,255],lt=[240,244,252];
+    doc.setFillColor(...navy);doc.rect(0,0,210,40,'F');
+    doc.setTextColor(...white);doc.setFontSize(20);doc.setFont(undefined,'bold');
+    doc.text('RIF Shield - Manager Review Packet',14,18);
+    doc.setFontSize(10);doc.setFont(undefined,'normal');
+    doc.text('AFGE Solidarity Innovation Group | Generated: '+new Date().toLocaleDateString(),14,27);
+    doc.text('Protection Level: L'+lv.l+' - '+lv.lbl+' | Score: '+score+'/100',14,34);
+    let y=52;
+    doc.setTextColor(...navy);doc.setFontSize(14);doc.setFont(undefined,'bold');
+    doc.text('Score Summary',14,y);y+=8;
+    const rows=[["Total Score",score+"/100"],["Experience",data.exp+"/30"],["Performance",data.perf+"/25"],["Training",data.train+"/20"],["Results",data.res+"/15"],["Teamwork",data.team+"/10"],["Journal Entries",String(data.journal.length)],["Current Streak",streak+" days"],["Courses Done",String(done.length)]];
+    rows.forEach(function(row,i){
+      if(i%2===0)doc.setFillColor(...lt);else doc.setFillColor(...white);
+      doc.rect(14,y-4,182,8,'F');
+      doc.setFontSize(11);doc.setFont(undefined,i===0?'bold':'normal');
+      doc.setTextColor(60,70,90);doc.text(row[0],18,y);
+      doc.setFont(undefined,'bold');doc.setTextColor(...navy);
+      doc.text(row[1],180,y,{align:'right'});y+=8;
     });
-    y+=12;
-    doc.setFontSize(13);doc.setFont("helvetica","bold");doc.setTextColor(15,28,63);
-    doc.text("Completed Training",40,y);y+=8;
-    doc.line(40,y,572,y);y+=18;
-    const cNames={"fac-cor":"FAC-COR Level I","deia":"DEIA Workplace Training","cyber":"Cybersecurity Awareness","pm":"Project Management Fundamentals","hr":"Federal HR Management","ethics":"Annual Ethics Training","eeo":"EEO Awareness Training"};
-    if(done.length){done.forEach(function(cid){doc.setFontSize(10);doc.setFont("helvetica","normal");doc.setTextColor(26,31,46);doc.text("✓ "+(cNames[cid]||cid),40,y);y+=16;});}
-    else{doc.setFontSize(10);doc.setTextColor(107,122,153);doc.text("No courses completed yet",40,y);y+=16;}
-    y+=12;
     if(data.journal.length){
-      doc.setFontSize(13);doc.setFont("helvetica","bold");doc.setTextColor(15,28,63);
-      doc.text("Recent Journal Entries (last 10)",40,y);y+=8;
-      doc.line(40,y,572,y);y+=18;
-      const recent=[...data.journal].reverse().slice(0,10);
-      const catL={exp:"Experience",perf:"Performance",res:"Results",team:"Teamwork",train:"Training"};
-      recent.forEach(function(e){
-        if(y>700){doc.addPage();y=40;}
-        doc.setFontSize(10);doc.setFont("helvetica","bold");doc.setTextColor(26,31,46);
-        doc.text(e.task.substring(0,70),40,y);
-        doc.setFont("helvetica","normal");doc.setTextColor(107,122,153);
-        doc.text(e.date+"  |"+( catL[e.cat]||e.cat)+"  |"+( e.hours||"8")+"h",40,y+13);
-        y+=28;
+      y+=6;doc.setTextColor(...navy);doc.setFontSize(14);doc.setFont(undefined,'bold');
+      doc.text('Journal Entries (Last 20)',14,y);y+=8;
+      data.journal.slice(-20).reverse().forEach(function(e){
+        if(y>270){doc.addPage();y=20;}
+        doc.setFillColor(...lt);doc.rect(14,y-4,182,8,'F');
+        doc.setFontSize(9);doc.setFont(undefined,'bold');doc.setTextColor(...navy);
+        const task=String(e.task||'').substring(0,60);
+        doc.text(task,18,y);
+        doc.setFont(undefined,'normal');doc.setTextColor(100,110,130);
+        doc.text(String(e.date)+' | '+String(e.cat||'').toUpperCase(),180,y,{align:'right'});y+=8;
       });
     }
-    y+=10;
-    if(y>680){doc.addPage();y=40;}
-    doc.setFillColor(15,28,63);doc.rect(0,y,612,80,"F");
-    doc.setTextColor(200,210,230);doc.setFontSize(9);doc.setFont("helvetica","normal");
-    doc.text("This document was generated by AFGE RIF Shield. All scores are self-reported and for informational purposes.",40,y+20);
-    doc.text("For official RIF proceedings, consult your AFGE union representative and review 5 CFR Part 351.",40,y+34);
-    doc.setTextColor(201,162,39);doc.text("AFGE RIF Shield - Solidarity Innovation Group",40,y+52);
-    doc.save("AFGE_RIF_Shield_Review_"+new Date().toISOString().slice(0,10)+".pdf");
-    showToast("✓ PDF exported successfully!");
-  }catch(err){
-    console.error("PDF error:",err);
-    showToast("PDF export failed: "+err.message);
-  }
+    doc.save('rif-shield-report.pdf');
+    showToast('✓ PDF downloaded!');
+  }catch(err){showToast('PDF export error: '+err.message);}
 }
+/**
+ * Exports all user data as a downloadable JSON backup file.
+ * Includes data object, course completions, export timestamp, and schema version.
+ * @returns {void}
+ */
 function exportJSON(){
-  const data=loadData();const courses=loadCourses();
-  const blob=new Blob([JSON.stringify({data:data,courses:courses,exported:new Date().toISOString()},null,2)],{type:"application/json"});
-  const url=URL.createObjectURL(blob);
-  const a=document.createElement("a");a.href=url;
-  a.download="RIF_Shield_Backup_"+new Date().toISOString().slice(0,10)+".json";
-  document.body.appendChild(a);a.click();document.body.removeChild(a);
-  URL.revokeObjectURL(url);showToast("✓ JSON backup exported!");
+  try{
+    const data=loadData();const done=loadCourses();
+    const blob=new Blob([JSON.stringify({version:2,exported:new Date().toISOString(),data:data,courses:done},null,2)],{type:'application/json'});
+    const a=document.createElement('a');a.href=URL.createObjectURL(blob);
+    a.download='rif-shield-backup.json';a.click();
+    showToast('✓ JSON backup downloaded!');
+  }catch(e){showToast('Export error: '+e.message);}
 }
+/**
+ * Generates a shareable text summary of the current score.
+ * Uses Web Share API on mobile, falls back to clipboard copy on desktop.
+ * @returns {void}
+ */
 function shareScore(){
   const data=loadData();const score=totalScore(data);const lv=getLevel(score);
-  const text="My AFGE RIF Shield Score: "+score+"/100 (Level "+lv.l+" - "+lv.lbl+"). Build your federal employment defense! #AFGERIFShield #FederalEmployees";
-  if(navigator.share){navigator.share({title:"AFGE RIF Shield",text:text}).catch(function(){});}
-  else{navigator.clipboard.writeText(text).then(function(){showToast("✓ Copied to clipboard!");}).catch(function(){showToast(text.substring(0,60)+"...");});}
+  const msg='I scored '+score+'/100 (Level '+lv.l+' - '+lv.lbl+') on my AFGE RIF Shield protection rating. Building workplace defense with @AFGEunion #RIFShield #FederalWorkers';
+  if(navigator.share){navigator.share({title:'My RIF Shield Score',text:msg}).catch(function(){});}
+  else if(navigator.clipboard){navigator.clipboard.writeText(msg).then(function(){showToast('Score copied to clipboard!');}).catch(function(){showToast('Share: '+msg);});}
+  else{showToast('Your score: L'+lv.l+' '+score+'/100');}
 }
-// ===== ONBOARDING =====
+// ╔════════════════════════════════════════════════════════╗
+// ║  MODULE: ONBOARDING — first-run intro modal step flow  ║
+// ╚════════════════════════════════════════════════════════╝
 let obStep=1;
-function showOnboarding(){
-  const m=document.getElementById("ob-modal");if(m)m.classList.add("open");
-  obStep=1;updateObStep();
-}
-function updateObStep(){
-  for(let i=1;i<=3;i++){
-    const s=document.getElementById("ob-s"+i);
-    if(s)s.className="ob-step"+(i===obStep?" active":"");
-    const dot=document.getElementById("od"+i);
-    if(dot)dot.className="ob-dot"+(i===obStep?" active":"");
-  }
-  const btn=document.getElementById("ob-next-btn");
-  if(btn)btn.textContent=obStep<3?"Next →":"✓ Get Started!";
-}
+/**
+ * Advances the onboarding modal to the next step (1→2→3→close).
+ * On final step, marks onboarding complete in localStorage and closes modal.
+ * @returns {void}
+ */
 function obNext(){
-  if(obStep<3){obStep++;updateObStep();}else{obSkip();}
+  obStep++;
+  if(obStep>3){obSkip();return;}
+  document.querySelectorAll('.ob-step').forEach(function(s){s.classList.remove('active');});
+  document.querySelectorAll('.ob-dot').forEach(function(d){d.classList.remove('active');});
+  const step=document.getElementById('ob-s'+obStep);
+  if(step)step.classList.add('active');
+  const dot=document.getElementById('od'+obStep);
+  if(dot)dot.classList.add('active');
+  const btn=document.getElementById('ob-next-btn');
+  if(btn)btn.textContent=obStep===3?'Get Started! →':'Next →';
 }
+/**
+ * Immediately skips the onboarding flow and closes the modal.
+ * Marks onboarding as complete in localStorage.
+ * @returns {void}
+ */
 function obSkip(){
-  localStorage.setItem(OB_KEY,"1");
-  const m=document.getElementById("ob-modal");if(m)m.classList.remove("open");
+  localStorage.setItem(OB_KEY,'1');
+  const m=document.getElementById('ob-modal');
+  if(m)m.classList.remove('open');
 }
-document.addEventListener("click",function(e){
-  if(e.target.id==="log-modal")closeLogModal();
-  if(e.target.id==="ob-modal")obSkip();
+/**
+ * Initializes the onboarding flow for first-time users.
+ * Checks localStorage for onboarded flag — shows modal only if absent.
+ * @returns {void}
+ */
+function initOnboarding(){
+  if(!localStorage.getItem(OB_KEY)){
+    const m=document.getElementById('ob-modal');
+    if(m)m.classList.add('open');
+  }
+}
+document.addEventListener('click',function(e){
+  if(e.target.classList.contains('modal-overlay')){
+    e.target.classList.remove('open');
+  }
 });
-function init(){
+// ╔══════════════════════════════════════════════════════════════════════════╗
+// ║  MODULE: INITIALIZATION — app bootstrap and service worker registration  ║
+// ╚══════════════════════════════════════════════════════════════════════════╝
+document.addEventListener('DOMContentLoaded',function(){
   renderDashboard();
-  if(!localStorage.getItem(OB_KEY)){setTimeout(showOnboarding,700);}
-  if("serviceWorker" in navigator){navigator.serviceWorker.register("sw.js").catch(function(){});}
-}
-window.addEventListener("DOMContentLoaded",init);
+  initOnboarding();
+  if('serviceWorker' in navigator){
+    navigator.serviceWorker.register('sw.js').catch(function(){});
+  }
+});
 </script>
 </body>
 </html>
