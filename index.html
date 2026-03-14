@@ -15,7 +15,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 <!-- chart.js" integrity sha256 + defer: applied above -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js" integrity="sha256-oCAKeyD2n9LkrKVMxxLRLYBsrMeJWZKfMNdMHPAARBU=" crossorigin="anonymous" defer></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js" integrity="sha512-qZvrmS2ekKPF2mSznTQsxqPgnpkI4DNTlrdUmTzrDgektczlKNRRhy5X5AAOnx5S09ydFYWWNSfcEqDTTHgtNA==" crossorigin="anonymous" defer></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js" integrity="sha512-qZvrmS2ekKPF2mSznTQsxqPgnpkI4DNTlrdUmTzrDgektczlKNRRhy5X5AAOnx5S09ydFYWWNSfcEqDTTHgtNA==" crossorigin="anonymous" onload="onJsPDFLoad()" defer></script>
 <style>
 :root{
   --navy:#0f1c3f;
@@ -217,10 +217,51 @@ header{position:sticky;top:0;z-index:80;background:var(--navy);padding:12px 16px
 .form-input:focus{border-color:var(--navy);}
 select.form-input{-webkit-appearance:none;appearance:none;padding-right:28px;}
 textarea.form-input{resize:vertical;min-height:72px;}
+
+/* Offline banner */
+.offline-banner { display:none; }
+#offline-banner {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 150;
+  padding: 8px 16px;
+  font-size: 13px;
+  font-weight: 600;
+  text-align: center;
+  display: none;
+  transition: opacity 0.3s ease;
+  font-family: inherit;
+}
+#offline-banner.is-offline {
+  display: block;
+  background: #92400e;
+  color: #fef3c7;
+}
+#offline-banner.is-online {
+  display: block;
+  background: #14532d;
+  color: #dcfce7;
+}
+body.has-offline-banner #screens {
+  padding-top: 34px;
+}
+/* PDF error message */
+#pdf-error-msg {
+  display: none;
+  color: #ef4444;
+  font-size: 12px;
+  margin-top: 6px;
+  padding: 8px 12px;
+  background: #fee2e2;
+  border-radius: 8px;
+}
 </style>
 </head>
 <body>
 <header id="hdr"><div class="hd-brand"><div class="hd-logo">S</div><div><div class="hd-title">RIF Shield</div><div class="hd-sub">Solidarity Innovation Group</div></div></div><div class="hd-streak" id="hdr-streak">&#128293; <span id="hdr-streak-n">0</span>d</div><button id="pwa-install-btn" class="btn-pwa-install" style="display:none" onclick="triggerInstallPrompt()" aria-label="Install RIF Shield app">⬇ Install App</button></header>
+<div id="offline-banner" class="offline-banner" role="status" aria-live="polite" aria-atomic="true" style="display:none;"></div>
 <div id="screens">
 <div class="screen active" id="s-dashboard">
 <div class="hero-card">
@@ -289,7 +330,8 @@ textarea.form-input{resize:vertical;min-height:72px;}
 <div class="report-row"><span class="report-row-lbl">Courses Completed</span><span class="report-row-val" id="r-courses">0</span></div>
 </div>
 <div class="card"><div class="card-hdr"><span class="card-ttl">Export</span></div>
-<button class="btn btn-p btn-full" onclick="generatePDF()" style="margin-bottom:10px">&#128196; Export Manager Review PDF</button>
+<button id="pdf-export-btn" class="btn btn-p btn-full" onclick="generatePDF()" style="margin-bottom:10px">&#128196; Export Manager Review PDF</button>
+<div id="pdf-error-msg" role="alert" aria-live="polite" style="display:none; color:#c0392b; font-size:13px; margin-top:8px; line-height:1.5; padding:6px 0;"></div>
 <button class="btn btn-o btn-full" onclick="exportJSON()" style="margin-bottom:10px">&#128190; Export JSON Backup</button>
 <button class="btn btn-o btn-full" onclick="shareScore()">&#128279; Share My Score</button>
 </div>
@@ -364,6 +406,21 @@ function escapeHtml(str){
 // ║  MODULE: CONSTANTS & CONFIG — storage keys, score limits, level thresholds  ║
 // ╚═════════════════════════════════════════════════════════════════════════════╝
 const STORE_KEY='rif_shield_data',COURSE_KEY='rif_courses',OB_KEY='rif_onboarded';
+// Feature A constants
+const PDF_BTN_ID='pdf-export-btn';
+const PDF_ERROR_MSG_ID='pdf-error-msg';
+const PDF_CDN_TIMEOUT_MS=10000;
+// Feature B constants
+const PDF_RING_CANVAS_SIZE=200;
+const PDF_RING_RADIUS=80;
+const PDF_RING_LINE_WIDTH=14;
+// Feature D constants
+const PDF_FILENAME_PREFIX='RIF-Shield-Report-';
+const PDF_BLOB_REVOKE_DELAY_MS=10000;
+// Feature E constants
+const OFFLINE_BANNER_ID='offline-banner';
+const OFFLINE_DEBOUNCE_MS=1500;
+const ONLINE_FLASH_DURATION_MS=3000;
 // ╔════════════════════════════════════════════════════════════════════╗
 // ║  MODULE: STORAGE — localStorage read/write with schema versioning  ║
 // ╚════════════════════════════════════════════════════════════════════╝
@@ -798,10 +855,174 @@ function saveLog(){
   renderDashboard();
   showToast('✓ Entry saved! +' + pts + ' pts');
 }
+// ╔══════════════════════════════════════════════════════════════════════╗
+// ║  MODULE: PDF ENHANCEMENTS — defer-safe generation, ring, citations  ║
+// ╚══════════════════════════════════════════════════════════════════════╝
+/** @type {boolean} Mutex: prevents re-entrant double-tap PDF generation */
+let pdfGenerating = false;
+/** @type {number|null} setTimeout handle for CDN watchdog timer */
+let pdfCdnTimeoutId = null;
+
+/**
+ * Checks whether the jsPDF library has fully loaded and is callable.
+ * Pure availability check — no side effects.
+ * @returns {boolean} true if jsPDF is ready, false otherwise
+ */
+function isPDFReady() {
+  return typeof window.jspdf !== 'undefined' && typeof window.jspdf.jsPDF === 'function';
+}
+
+/**
+ * Reveals persistent PDF error element and permanently disables the export button.
+ * Called by CDN watchdog on timeout or if onJsPDFLoad detects failure.
+ * Does NOT call showToast — persistent element is the sole feedback mechanism.
+ * @returns {void}
+ */
+function showPDFLoadError() {
+  var errEl = document.getElementById(PDF_ERROR_MSG_ID);
+  if (errEl) {
+    errEl.style.display = 'block';
+    errEl.textContent = 'PDF generation is currently unavailable. Your network may be blocking the required library. Please try on a personal device or a non-agency network.';
+  }
+  var btn = document.getElementById(PDF_BTN_ID);
+  if (btn) {
+    btn.disabled = true;
+    btn.textContent = 'PDF Unavailable';
+  }
+}
+
+/**
+ * Called by jsPDF script onload event. Clears CDN watchdog and enables the export button.
+ * @returns {void}
+ */
+function onJsPDFLoad() {
+  clearTimeout(pdfCdnTimeoutId);
+  if (isPDFReady()) {
+    var btn = document.getElementById(PDF_BTN_ID);
+    if (btn) {
+      btn.disabled = false;
+      btn.textContent = '📄 Export Manager Review PDF';
+    }
+  } else {
+    showPDFLoadError();
+  }
+}
+
+/**
+ * Creates an offscreen canvas score ring and returns it as a PNG data URL.
+ * Draws a gold arc proportional to score/100 over a gray track on a white background.
+ * @param {number} score - Integer 0-100 representing the protection score
+ * @param {{l:number, min:number, lbl:string}} level - Level object from LVL_T
+ * @returns {string|null} PNG data URL string, or null if canvas is unavailable
+ */
+function drawScoreRingCanvas(score, level) {
+  try {
+    var canvas = document.createElement('canvas');
+    canvas.width = PDF_RING_CANVAS_SIZE;
+    canvas.height = PDF_RING_CANVAS_SIZE;
+    var ctx = canvas.getContext('2d');
+    if (!ctx) return null;
+    ctx.fillStyle = '#ffffff';
+    ctx.fillRect(0, 0, PDF_RING_CANVAS_SIZE, PDF_RING_CANVAS_SIZE);
+    ctx.beginPath();
+    ctx.arc(100, 100, PDF_RING_RADIUS, 0, Math.PI * 2);
+    ctx.strokeStyle = '#e2e8f0';
+    ctx.lineWidth = PDF_RING_LINE_WIDTH;
+    ctx.stroke();
+    if (score > 0) {
+      ctx.beginPath();
+      ctx.arc(100, 100, PDF_RING_RADIUS, -Math.PI / 2, -Math.PI / 2 + (Math.PI * 2 * score / 100));
+      ctx.strokeStyle = '#c9a227';
+      ctx.lineWidth = PDF_RING_LINE_WIDTH;
+      ctx.lineCap = 'round';
+      ctx.stroke();
+    }
+    ctx.fillStyle = '#0f1c3f';
+    ctx.font = 'bold 48px Arial, sans-serif';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(String(score), 100, 92);
+    ctx.fillStyle = '#6b7280';
+    ctx.font = '16px Arial, sans-serif';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(level.lbl, 100, 128);
+    try {
+      return canvas.toDataURL('image/png');
+    } catch (e) { return null; }
+  } catch (e) { return null; }
+}
+
+/**
+ * Appends a legal citations section to the PDF document.
+ * Adds a new page if yPosition > 230 to ensure all citations fit.
+ * @param {object} doc - jsPDF document instance
+ * @param {number} yPosition - Current y cursor in mm
+ * @returns {number} Updated y cursor position after citations are rendered
+ */
+function addLegalCitations(doc, yPosition) {
+  var y = yPosition;
+  if (y > 230) { doc.addPage(); y = 20; }
+  doc.setDrawColor(201, 162, 39);
+  doc.setLineWidth(0.5);
+  doc.line(14, y, 196, y);
+  y += 6;
+  doc.setTextColor(15, 28, 63);
+  doc.setFontSize(10);
+  doc.setFont(undefined, 'bold');
+  doc.text('Legal Basis & Regulatory References', 14, y);
+  y += 7;
+  var citations = [
+    '5 CFR Part 351 — Reduction in Force: Establishes the comprehensive regulatory framework governing all federal RIF actions, including competitive areas, competitive levels, and retention registers.',
+    '5 CFR 351.501 — Retention Standing: Defines how retention standing is determined by tenure group, veterans preference, and performance ratings.',
+    '5 CFR 351.701 — Bump and Retreat Rights: Establishes the rights of employees to displace lower-standing employees or retreat to formerly held positions during a RIF.',
+    'OPM Workforce Restructuring (RIF) Guidance — Office of Personnel Management official guidance on implementing reduction in force procedures. See: opm.gov/policy-data-oversight/workforce-restructuring/reductions-in-force/'
+  ];
+  citations.forEach(function(citation) {
+    doc.setFontSize(8);
+    doc.setFont(undefined, 'normal');
+    doc.setTextColor(60, 70, 90);
+    var lines = doc.splitTextToSize(citation, 182);
+    doc.text(lines, 14, y);
+    y += (lines.length * 4.5) + 2;
+  });
+  return y;
+}
+
+/**
+ * Triggers PDF download with iOS Safari compatibility.
+ * Desktop: uses jsPDF doc.save(). iOS: Blob URL + programmatic anchor click.
+ * @param {object} doc - jsPDF document instance
+ * @param {string} filename - Full filename including .pdf extension
+ * @returns {void}
+ */
+function downloadPDF(doc, filename) {
+  var isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+  if (!isIOS) {
+    doc.save(filename);
+  } else {
+    var blob = doc.output('blob');
+    var objectUrl = URL.createObjectURL(blob);
+    var anchor = document.createElement('a');
+    anchor.href = objectUrl;
+    anchor.download = filename;
+    anchor.style.display = 'none';
+    document.body.appendChild(anchor);
+    anchor.click();
+    document.body.removeChild(anchor);
+    setTimeout(function() { URL.revokeObjectURL(objectUrl); }, PDF_BLOB_REVOKE_DELAY_MS);
+  }
+}
+
 function generatePDF(){
+  // Entry guards: library check + double-tap mutex
+  if (!isPDFReady()) { showPDFLoadError(); return; }
+  if (pdfGenerating) { return; }
+  pdfGenerating = true;
+  var _pdfBtn = document.getElementById(PDF_BTN_ID);
+  if (_pdfBtn) { _pdfBtn.disabled = true; _pdfBtn.textContent = 'Generating...'; }
   try{
-    const jsPDF=window.jspdf&&window.jspdf.jsPDF;
-    if(!jsPDF){showToast('PDF library not loaded. Check your connection.');return;}
+    const jsPDF=window.jspdf.jsPDF;
     const data=loadData();const score=totalScore(data);const lv=getLevel(score);const streak=calcStreak(data.journal);const done=loadCourses();
     const doc=new jsPDF({orientation:'portrait',unit:'mm',format:'a4'});
     const navy=[15,28,63],gold=[201,162,39],white=[255,255,255],lt=[240,244,252];
@@ -811,6 +1032,16 @@ function generatePDF(){
     doc.setFontSize(10);doc.setFont(undefined,'normal');
     doc.text('AFGE Solidarity Innovation Group | Generated: '+new Date().toLocaleDateString(),14,27);
     doc.text('Protection Level: L'+lv.l+' - '+lv.lbl+' | Score: '+score+'/100',14,34);
+    // Feature B: Score ring in PDF header
+    const ringDataUrl = drawScoreRingCanvas(score, lv);
+    if (ringDataUrl !== null) {
+      doc.addImage(ringDataUrl, 'PNG', 140, 2, 36, 36);
+    } else {
+      doc.setTextColor(...white);
+      doc.setFontSize(10);
+      doc.setFont(undefined, 'normal');
+      doc.text('Score: '+score+'/100 — '+lv.lbl, 155, 22, {align:'center'});
+    }
     let y=52;
     doc.setTextColor(...navy);doc.setFontSize(14);doc.setFont(undefined,'bold');
     doc.text('Score Summary',14,y);y+=8;
@@ -830,15 +1061,31 @@ function generatePDF(){
         if(y>270){doc.addPage();y=20;}
         doc.setFillColor(...lt);doc.rect(14,y-4,182,8,'F');
         doc.setFontSize(9);doc.setFont(undefined,'bold');doc.setTextColor(...navy);
-        const task=String(e.task||'').substring(0,60);
+        const task=escapeHtml(String(e.task||'')).substring(0,60);
         doc.text(task,18,y);
         doc.setFont(undefined,'normal');doc.setTextColor(100,110,130);
-        doc.text(String(e.date)+' | '+String(e.cat||'').toUpperCase(),180,y,{align:'right'});y+=8;
+        doc.text(escapeHtml(String(e.date))+' | '+escapeHtml(String(e.cat||'')).toUpperCase(),180,y,{align:'right'});y+=8;
       });
     }
-    doc.save('rif-shield-report.pdf');
+    // Feature C: Legal citations section
+    y = addLegalCitations(doc, y + 8);
+    // Feature D: Named file + iOS-compatible download
+    const today=new Date();
+    const yyyy=today.getFullYear();
+    const mm=String(today.getMonth()+1).padStart(2,'0');
+    const dd=String(today.getDate()).padStart(2,'0');
+    const filename=PDF_FILENAME_PREFIX+yyyy+'-'+mm+'-'+dd+'.pdf';
+    downloadPDF(doc, filename);
     showToast('✓ PDF downloaded!');
-  }catch(err){showToast('PDF export error: '+err.message);}
+    // Exit cleanup (success path)
+    pdfGenerating = false;
+    if (_pdfBtn) { _pdfBtn.disabled = false; _pdfBtn.textContent = '📄 Export Manager Review PDF'; }
+  }catch(err){
+    showToast('PDF export error: '+err.message);
+    // Exit cleanup (error path)
+    pdfGenerating = false;
+    if (_pdfBtn) { _pdfBtn.disabled = false; _pdfBtn.textContent = '📄 Export Manager Review PDF'; }
+  }
 }
 /**
  * Exports all user data as a downloadable JSON backup file.
@@ -960,6 +1207,72 @@ function handleAppInstalled() {
   if (btn) btn.style.display = 'none';
   showToast('App installed! Open from your home screen.');
 }
+// ╔══════════════════════════════════════════════════════════════════════╗
+// ║  MODULE: OFFLINE DETECTION — network status banner with debounce  ║
+// ╚══════════════════════════════════════════════════════════════════════╝
+/** @type {number|null} Debounce timer ID for offline/online banner transitions */
+let offlineBannerDebounceId = null;
+
+/**
+ * Handles window offline event with debounce.
+ * @returns {void}
+ */
+function offlineBannerHandler() {
+  clearTimeout(offlineBannerDebounceId);
+  offlineBannerDebounceId = setTimeout(showOfflineBanner, OFFLINE_DEBOUNCE_MS);
+}
+
+/**
+ * Handles window online event with debounce.
+ * @returns {void}
+ */
+function onlineBannerHandler() {
+  clearTimeout(offlineBannerDebounceId);
+  offlineBannerDebounceId = setTimeout(hideOfflineBanner, OFFLINE_DEBOUNCE_MS);
+}
+
+/**
+ * Displays the offline warning state of the banner.
+ * Adds is-offline class and has-offline-banner body class.
+ * @returns {void}
+ */
+function showOfflineBanner() {
+  var el = document.getElementById(OFFLINE_BANNER_ID);
+  if (!el) return;
+  el.classList.remove('is-online');
+  el.classList.add('is-offline');
+  el.textContent = 'You are offline — app is running in offline mode';
+  document.body.classList.add('has-offline-banner');
+}
+
+/**
+ * Hides the banner after briefly showing a back-online green flash.
+ * Removes has-offline-banner from body after ONLINE_FLASH_DURATION_MS.
+ * @returns {void}
+ */
+function hideOfflineBanner() {
+  var el = document.getElementById(OFFLINE_BANNER_ID);
+  if (!el) return;
+  el.classList.remove('is-offline');
+  el.classList.add('is-online');
+  el.textContent = 'You are back online';
+  setTimeout(function() {
+    el.classList.remove('is-online');
+    document.body.classList.remove('has-offline-banner');
+  }, ONLINE_FLASH_DURATION_MS);
+}
+
+/**
+ * Registers online/offline event listeners and performs immediate state check.
+ * Shows banner immediately (no debounce) if page loads while already offline.
+ * @returns {void}
+ */
+function initOfflineDetection() {
+  window.addEventListener('offline', offlineBannerHandler);
+  window.addEventListener('online', onlineBannerHandler);
+  if (navigator.onLine === false) { showOfflineBanner(); }
+}
+
 
 // ║  MODULE: INITIALIZATION — app bootstrap and service worker registration  ║
 // ╚══════════════════════════════════════════════════════════════════════════╝
@@ -969,6 +1282,15 @@ document.addEventListener('DOMContentLoaded',function(){
   if('serviceWorker' in navigator){
     navigator.serviceWorker.register('sw.js').catch(function(){});
   }
+  // Feature A: Disable PDF button until jsPDF CDN loads
+  var pdfBtn = document.getElementById(PDF_BTN_ID);
+  if (pdfBtn) { pdfBtn.disabled = true; pdfBtn.textContent = 'Loading PDF library...'; }
+  // Feature A: CDN watchdog — show error if jsPDF not loaded within PDF_CDN_TIMEOUT_MS
+  pdfCdnTimeoutId = setTimeout(function() {
+    if (!isPDFReady()) { showPDFLoadError(); }
+  }, PDF_CDN_TIMEOUT_MS);
+  // Feature E: Initialize offline detection
+  initOfflineDetection();
 });
 </script>
 </body>
