@@ -216,6 +216,30 @@ header{position:sticky;top:0;z-index:80;background:var(--navy);padding:12px 16px
 .form-input{width:100%;border:1.5px solid var(--border);border-radius:10px;padding:10px 12px;font-size:13px;font-family:inherit;color:var(--text);background:#fff;outline:none;transition:border-color .18s;}
 .form-input:focus{border-color:var(--navy);}
 select.form-input{-webkit-appearance:none;appearance:none;padding-right:28px;}
+/* ── Sprint 6: Char Counter ───────────────────────────────────────────── */
+.char-counter{display:block;font-size:11px;text-align:right;margin-top:3px;color:var(--muted);transition:color .18s;}
+.char-counter--warn{color:#b45309;}
+.char-counter--danger{color:#dc2626;}
+.char-counter--blocked{color:#dc2626;font-weight:700;}
+/* ── Sprint 6: Field Error ────────────────────────────────────────────── */
+.field-error{display:none;color:#dc2626;font-size:11px;font-weight:600;margin-top:3px;}
+.field-error.visible{display:block;}
+/* ── Sprint 6: Category Button Grid ──────────────────────────────────── */
+.cat-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;margin-top:4px;}
+.cat-btn{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:8px 4px;border:1.5px solid var(--border);border-radius:10px;background:#fff;color:var(--text);font-family:inherit;font-size:10px;font-weight:600;cursor:pointer;transition:border-color .18s,background .18s,color .18s;gap:4px;outline:none;}
+.cat-btn:focus-visible{outline:2px solid var(--gold);outline-offset:2px;}
+.cat-btn-icon{font-size:18px;line-height:1;}
+.cat-btn-label{font-size:10px;font-weight:700;color:inherit;text-align:center;line-height:1.2;}
+.cat-btn--selected{border-color:var(--gold);background:var(--navy);color:#fff;}
+@media (max-width:360px){.cat-grid{grid-template-columns:repeat(3,1fr);}}
+/* ── Sprint 6: Hours Stepper ──────────────────────────────────────────── */
+.hours-stepper{display:flex;align-items:center;gap:0;border:1.5px solid var(--border);border-radius:10px;overflow:hidden;background:#fff;}
+.hours-btn{width:40px;min-width:40px;height:40px;background:var(--bg);border:none;border-radius:0;font-size:20px;font-weight:300;color:var(--navy);cursor:pointer;display:flex;align-items:center;justify-content:center;transition:background .15s,opacity .15s;flex-shrink:0;}
+.hours-btn:active{background:var(--border);}
+.hours-btn:disabled,.hours-btn[disabled]{opacity:0.35;cursor:not-allowed;}
+.hours-input{flex:1;border:none !important;border-left:1.5px solid var(--border) !important;border-right:1.5px solid var(--border) !important;border-radius:0 !important;text-align:center;min-width:0;padding:10px 4px;}
+.hours-input::-webkit-inner-spin-button,.hours-input::-webkit-outer-spin-button{-webkit-appearance:none;margin:0;}
+.hours-input[type=number]{-moz-appearance:textfield;}
 textarea.form-input{resize:vertical;min-height:72px;}
 
 /* Offline banner */
@@ -350,11 +374,64 @@ body.has-offline-banner #screens {
 <div class="modal-handle"></div>
 <div class="modal-title">Log Entry</div>
 <div class="modal-sub">Record your work to build your protection score</div>
-<div class="form-group"><label class="form-label" for="log-cat">Category</label><select class="form-input" id="log-cat"><option value="exp">Experience</option><option value="perf">Performance</option><option value="res">Results</option><option value="team">Teamwork</option><option value="train">Training</option></select></div>
-<div class="form-group"><label class="form-label" for="log-task">What did you accomplish?</label><input class="form-input" id="log-task" type="text" placeholder="e.g. Led cross-team meeting, delivered project milestone…" maxlength="200"></div>
-<div class="form-group"><label class="form-label" for="log-hours">Hours worked</label><input class="form-input" id="log-hours" type="number" min="0.5" max="24" step="0.5" value="8" placeholder="8"></div>
-<div class="form-group"><label class="form-label" for="log-notes">Additional notes (optional)</label><textarea class="form-input" id="log-notes" placeholder="Context, outcomes, people involved…" maxlength="500"></textarea></div>
-<button class="btn btn-p btn-full" onclick="saveLog()" style="margin-bottom:10px">&#10003; Save Entry</button>
+<div class="form-group">
+  <label class="form-label" id="category-label">Category</label>
+  <div id="log-category-grid" class="cat-grid" role="group" aria-labelledby="category-label">
+    <button type="button" class="cat-btn" data-value="seniority"
+            role="radio" aria-checked="false" aria-label="Seniority">
+      <span class="cat-btn-icon">&#128197;</span>
+      <span class="cat-btn-label">Seniority</span>
+    </button>
+    <button type="button" class="cat-btn" data-value="performance"
+            role="radio" aria-checked="false" aria-label="Performance">
+      <span class="cat-btn-icon">&#11088;</span>
+      <span class="cat-btn-label">Performance</span>
+    </button>
+    <button type="button" class="cat-btn" data-value="awards"
+            role="radio" aria-checked="false" aria-label="Awards">
+      <span class="cat-btn-icon">&#127942;</span>
+      <span class="cat-btn-label">Awards</span>
+    </button>
+    <button type="button" class="cat-btn" data-value="tenure"
+            role="radio" aria-checked="false" aria-label="Tenure">
+      <span class="cat-btn-icon">&#127384;</span>
+      <span class="cat-btn-label">Tenure</span>
+    </button>
+    <button type="button" class="cat-btn" data-value="veterans"
+            role="radio" aria-checked="false" aria-label="Veterans Preference">
+      <span class="cat-btn-icon">&#129333;</span>
+      <span class="cat-btn-label">Veterans</span>
+    </button>
+  </div>
+  <input type="hidden" id="log-category" name="log-category" value="">
+  <span class="field-error" id="category-error"></span>
+</div>
+<div class="form-group">
+  <label class="form-label" for="log-task">What did you accomplish?</label>
+  <input class="form-input" id="log-task" type="text" placeholder="e.g. Led cross-team meeting, delivered project milestone…" maxlength="500">
+  <span class="field-error" id="task-error"></span>
+  <span class="char-counter" id="task-char-counter" aria-live="polite">500 / 500</span>
+</div>
+<div class="form-group">
+  <label class="form-label" for="log-hours">Hours worked</label>
+  <div class="hours-stepper" id="hours-stepper-widget">
+    <button type="button" class="hours-btn" id="hours-decrement"
+            aria-label="Decrease hours">&#8722;</button>
+    <input class="form-input hours-input" id="log-hours"
+           type="number" min="0.25" max="24" step="0.25"
+           value="1" inputmode="decimal" autocomplete="off">
+    <button type="button" class="hours-btn" id="hours-increment"
+            aria-label="Increase hours">&#43;</button>
+  </div>
+  <span class="field-error" id="hours-error"></span>
+</div>
+<div class="form-group">
+  <label class="form-label" for="log-notes">Additional notes (optional)</label>
+  <textarea class="form-input" id="log-notes" placeholder="Context, outcomes, people involved…" maxlength="1000"></textarea>
+  <span class="field-error" id="notes-error"></span>
+  <span class="char-counter" id="notes-char-counter" aria-live="polite">1000 / 1000</span>
+</div>
+<button class="btn btn-p btn-full" id="log-save-btn" onclick="saveLog()" style="margin-bottom:10px">&#10003; Save Entry</button>
 <button class="btn btn-o btn-full" onclick="closeLogModal()">Cancel</button>
 </div>
 </div>
@@ -421,15 +498,22 @@ const PDF_BLOB_REVOKE_DELAY_MS=10000;
 const OFFLINE_BANNER_ID='offline-banner';
 const OFFLINE_DEBOUNCE_MS=1500;
 const ONLINE_FLASH_DURATION_MS=3000;
+// ── Form UX Constants (Sprint 6) ──────────────────────────────────────────
+const TASK_MAX_CHARS  = 500;   // Maximum characters for task description field
+const NOTES_MAX_CHARS = 1000;  // Maximum characters for notes field
+const HOURS_STEP      = 0.25;  // Hours stepper increment/decrement step
+const HOURS_MIN       = 0.25;  // Minimum allowable hours value
+const HOURS_MAX       = 24;    // Maximum allowable hours value
+const HOURS_DEFAULT   = 1.0;   // Default hours value on form open/reset
 // ╔════════════════════════════════════════════════════════════════════╗
 // ║  MODULE: STORAGE — localStorage read/write with schema versioning  ║
 // ╚════════════════════════════════════════════════════════════════════╝
 /**
  * Returns a fresh default data object for new users.
  * All category scores start at 0.
- * @returns {{exp:number, perf:number, train:number, res:number, team:number, journal:Array}}
+ * @returns {{seniority:number, performance:number, awards:number, tenure:number, veterans:number, exp:number, perf:number, train:number, res:number, team:number, journal:Array}}
  */
-function defaultData(){return {exp:0,perf:0,train:0,res:0,team:0,journal:[]};} // all categories start at 0
+function defaultData(){return {seniority:0,performance:0,awards:0,tenure:0,veterans:0,exp:0,perf:0,train:0,res:0,team:0,journal:[]};} // all categories start at 0
 /**
  * Loads user data from localStorage with error fallback.
  * Falls back to defaultData() if storage is empty, corrupted, or schema mismatch.
@@ -458,7 +542,7 @@ function loadData(){
  */
 function saveData(d){
   // Add schema version for future migration support
-  const versioned = Object.assign({}, d, {_schema: 1, _saved: new Date().toISOString()});
+  const versioned = Object.assign({}, d, {_schema: 2, _saved: new Date().toISOString()});
   localStorage.setItem(STORE_KEY, JSON.stringify(versioned));
 }
 /**
@@ -472,20 +556,59 @@ function loadCourses(){try{const r=localStorage.getItem(COURSE_KEY);return r?JSO
  * @returns {void}
  */
 function saveCourses(c){localStorage.setItem(COURSE_KEY,JSON.stringify(c));}
-const MAXES={exp:30,perf: 25,train:20,res:15,team:10};
+const MAXES={seniority:30,performance:25,awards:20,tenure:15,veterans:10};
 const LVL_T=[{l:5,min:90,lbl:'Max'},{l:4,min:80,lbl:'Strong'},{l:3,min:70,lbl:'Good'},{l:2,min:60,lbl:'Fair'},{l:1,min:0,lbl:'Basic'}];
 /** @type {BeforeInstallPromptEvent|null} Captured install prompt event, null if unavailable or already used */
 let deferredInstallPrompt = null;
 // ╔═══════════════════════════════════════════════════════════════════╗
+/**
+ * Migrates localStorage data from schema v1 to v2.
+ * Maps legacy category keys to new keys in scores and journal entries.
+ * Key mapping: exp->seniority, perf->performance, res->awards, team->tenure, train->veterans
+ * Idempotent: checks _schema version before running; safe to call on every app load.
+ * @param {void}
+ * @returns {void}
+ */
+function migrateDataV2() {
+  try {
+    var raw = localStorage.getItem(STORE_KEY);
+    if (!raw) return;
+    var stored = JSON.parse(raw);
+    if (stored._schema && stored._schema >= 2) return;
+    var keyMap = {exp: 'seniority', perf: 'performance', res: 'awards', team: 'tenure', train: 'veterans'};
+    Object.keys(keyMap).forEach(function(oldKey) {
+      var newKey = keyMap[oldKey];
+      if (typeof stored[oldKey] !== 'undefined') {
+        stored[newKey] = (stored[newKey] || 0) + stored[oldKey];
+        delete stored[oldKey];
+      }
+    });
+    if (Array.isArray(stored.journal)) {
+      stored.journal = stored.journal.map(function(entry) {
+        if (entry.cat && keyMap[entry.cat]) {
+          return Object.assign({}, entry, {cat: keyMap[entry.cat]});
+        }
+        return entry;
+      });
+    }
+    stored._schema = 2;
+    stored._saved  = new Date().toISOString();
+    localStorage.setItem(STORE_KEY, JSON.stringify(stored));
+  } catch(e) {
+    console.warn('RIF Shield: migrateDataV2 failed', e);
+  }
+}
+
+
 // ║  MODULE: SCORE ENGINE — scoring, level calculation, streak logic  ║
 // ╚═══════════════════════════════════════════════════════════════════╝
 /**
  * Calculates the total protection score across all 5 categories.
  * Each category is capped at its maximum to prevent score overflow.
- * @param {{exp:number, perf:number, train:number, res:number, team:number}} d - User data object
+ * @param {{seniority:number, performance:number, awards:number, tenure:number, veterans:number}} d - User data object
  * @returns {number} Total score 0–100
  */
-function totalScore(d){return Math.min(d.exp,30)+Math.min(d.perf,25)+Math.min(d.train,20)+Math.min(d.res,15)+Math.min(d.team,10);}
+function totalScore(d){return Math.min(d.seniority||0,30)+Math.min(d.performance||0,25)+Math.min(d.awards||0,20)+Math.min(d.tenure||0,15)+Math.min(d.veterans||0,10);}
 /**
  * Returns the level object for a given score.
  * Levels: L1 Basic (0-59), L2 Fair (60-69), L3 Good (70-79), L4 Strong (80-89), L5 Max (90+).
@@ -591,7 +714,7 @@ function renderDashboard(){
     const chip=document.getElementById('lc'+i);
     if(chip)chip.className='lchip'+(i<lv.l?' done':i===lv.l?' active':'');
   }
-  [['exp',data.exp,30],['perf',data.perf,25],['train',data.train,20],['res',data.res,15],['team',data.team,10]].forEach(function([k,v,mx]){
+  [['seniority',data.seniority||0,30],['performance',data.performance||0,25],['veterans',data.veterans||0,20],['awards',data.awards||0,15],['tenure',data.tenure||0,10]].forEach(function([k,v,mx]){
     const el=document.getElementById('v-'+k);
     if(el)el.innerHTML=v+"<span class='vden'>/"+mx+'</span>';
     const bar=document.getElementById('vb-'+k);
@@ -629,23 +752,23 @@ function renderDashboard(){
       wrap.appendChild(sq);wrap.appendChild(lbl);dotsCont.appendChild(wrap);
     }
   }
-  const vitals=[['exp',data.exp,30],['perf',data.perf,25],['train',data.train,20],['res',data.res,15],['team',data.team,10]];
+  const vitals=[['seniority',data.seniority||0,30],['performance',data.performance||0,25],['veterans',data.veterans||0,20],['awards',data.awards||0,15],['tenure',data.tenure||0,10]];
   const gaps=vitals.map(function([k,v,mx]){return{k,gap:mx-v};}).sort(function(a,b){return b.gap-a.gap;});
   const worst=gaps[0].k;
   const worstGap=gaps[0].gap;
-const entryEst=worst==='train'?'1 course':Math.ceil(worstGap/2)+' entries';
+const entryEst=worst==='awards'?'1 course':Math.ceil(worstGap/2)+' entries';
 const imap={
-  exp:{tag:'Experience Gap · '+worstGap+' pts remaining',title:'Log more daily work achievements',body:'You need '+worstGap+' more Experience points (max 30). Each journal entry earns up to 2 pts. Log '+Math.ceil(worstGap/2)+' more entries to close the gap.'},
-  perf:{tag:'Performance Gap · '+worstGap+' pts remaining',title:'Document your performance outcomes',body:'You need '+worstGap+' more Performance points (max 25). Record specific achievements, awards, commendations, and positive supervisor feedback.'},
-  train:{tag:'Training Gap · '+worstGap+' pts remaining',title:'Complete recommended federal training',body:'You need '+worstGap+' more Training points (max 20). Complete '+Math.ceil(worstGap/1.5)+' courses in the Training tab to reach your target.'},
-  res:{tag:'Results Gap · '+worstGap+' pts remaining',title:'Record your measurable results',body:'You need '+worstGap+' more Results points (max 15). Document deliverables, project completions, and quantifiable outcomes from your work.'},
-  team:{tag:'Teamwork Gap · '+worstGap+' pts remaining',title:'Log your collaborative contributions',body:'You need '+worstGap+' more Teamwork points (max 10). Record mentoring, cross-team coordination, and collaborative efforts.'},
+  seniority:{tag:'Seniority Gap · '+worstGap+' pts remaining',title:'Log more daily work achievements',body:'You need '+worstGap+' more Seniority points (max 30). Each journal entry earns up to 2 pts. Log '+Math.ceil(worstGap/2)+' more entries to close the gap.'},
+  performance:{tag:'Performance Gap · '+worstGap+' pts remaining',title:'Document your performance outcomes',body:'You need '+worstGap+' more Performance points (max 25). Record specific achievements, awards, commendations, and positive supervisor feedback.'},
+  awards:{tag:'Awards Gap · '+worstGap+' pts remaining',title:'Complete recommended federal training',body:'You need '+worstGap+' more Awards points (max 20). Complete '+Math.ceil(worstGap/1.5)+' courses in the Training tab to reach your target.'},
+  tenure:{tag:'Tenure Gap · '+worstGap+' pts remaining',title:'Record your measurable results',body:'You need '+worstGap+' more Tenure points (max 15). Document deliverables, project completions, and quantifiable outcomes from your work.'},
+  veterans:{tag:'Veterans Gap · '+worstGap+' pts remaining',title:'Log your collaborative contributions',body:'You need '+worstGap+' more Veterans points (max 10). Record mentoring, cross-team coordination, and collaborative efforts.'},
 };
-const ins=imap[worst]||imap.exp;
+const ins=imap[worst]||imap.seniority;
 const itag=document.getElementById('ins-tag');if(itag)itag.textContent=ins.tag;
 const ititle=document.getElementById('ins-title');if(ititle)ititle.textContent=ins.title;
 const ibody=document.getElementById('ins-body');if(ibody)ibody.textContent=ins.body;
-  const radarData=[Math.round(data.exp/30*100),Math.round(data.perf/25*100),Math.round(data.train/20*100),Math.round(data.res/15*100),Math.round(data.team/10*100)];
+  const radarData=[Math.round((data.seniority||0)/30*100),Math.round((data.performance||0)/25*100),Math.round((data.awards||0)/20*100),Math.round((data.tenure||0)/15*100),Math.round((data.veterans||0)/10*100)];
   const rctx=document.getElementById('radarChart');
   if(rctx){
     if(radarChart){radarChart.data.datasets[0].data=radarData;radarChart.update();}
@@ -666,7 +789,7 @@ function renderJournal(){
   const list=document.getElementById('journal-list');if(!list)return;
   const entries=[...data.journal].reverse();
   const jc=document.getElementById('j-count');if(jc)jc.textContent=entries.length+' total';
-  const catL={exp:'Experience',perf:'Performance',res:'Results',team:'Teamwork',train:'Training'};
+  const catL={seniority:'Seniority',performance:'Performance',awards:'Awards',tenure:'Tenure',veterans:'Veterans'};
   if(!entries.length){
     list.innerHTML="<div class='empty-state'><div class='es-icon'>&#128221;</div><div class='es-t'>No entries yet</div><div class='es-d'>Tap + Log Entry to record your work</div></div>";
   }else{
@@ -709,7 +832,7 @@ function renderJournal(){
  */
 function renderTraining(){
   const data=loadData();const done=loadCourses();
-  const ts=Math.min(data.train,20);
+  const ts=Math.min(data.veterans||0,20);
   const trf=document.getElementById('t-ring-fg');if(trf)trf.style.strokeDashoffset=213.6-(213.6*ts/20);
   const trn=document.getElementById('t-ring-num');if(trn)trn.textContent=ts;
   const tsv=document.getElementById('t-score-val');if(tsv)tsv.textContent=ts+'/20';
@@ -750,11 +873,11 @@ function toggleCourse(cid){
   let data=loadData();
   if(idx===-1){
     done.push(cid);
-    data.train=Math.min(20,data.train+(cPts[cid]||0));
+    data.veterans=Math.min(20,(data.veterans||0)+(cPts[cid]||0));
     showToast('✓ Course marked complete! +'+( cPts[cid]||0)+' pts');
   }else{
     done.splice(idx,1);
-    data.train=Math.max(0,data.train-(cPts[cid]||0));
+    data.veterans=Math.max(0,(data.veterans||0)-(cPts[cid]||0));
     showToast('Course unmarked');
   }
   saveCourses(done);
@@ -773,7 +896,7 @@ function toggleCourse(cid){
 function renderReports(){
   const data=loadData();const score=totalScore(data);
   const lv=getLevel(score);const streak=calcStreak(data.journal);const done=loadCourses();
-  const map={'r-total':score+'/100','r-exp':data.exp+'/30','r-perf':data.perf+'/25','r-train':data.train+'/20','r-res':data.res+'/15','r-team':data.team+'/10','r-entries':String(data.journal.length),'r-streak':streak+' days','r-courses':String(done.length)};
+  const map={'r-total':score+'/100','r-exp':(data.seniority||0)+'/30','r-perf':(data.performance||0)+'/25','r-train':(data.veterans||0)+'/20','r-res':(data.awards||0)+'/15','r-team':(data.tenure||0)+'/10','r-entries':String(data.journal.length),'r-streak':streak+' days','r-courses':String(done.length)};
   Object.keys(map).forEach(function(id){const e=document.getElementById(id);if(e)e.textContent=map[id];});
   const rlc=document.getElementById('r-level-chip');if(rlc)rlc.textContent='L'+lv.l+' - '+lv.lbl;
 }
@@ -805,56 +928,331 @@ function closeLogModal(){
  * @returns {void}
  */
 function saveLog(){
-  // Validate required fields
+  // Inline validation — replaces all showToast validation calls
+  if (!validateLogForm()) return;
+  // Read field values after validation passes
   const taskEl  = document.getElementById('log-task');
-  const catEl   = document.getElementById('log-cat');
+  const catEl   = document.getElementById('log-category');
   const hoursEl = document.getElementById('log-hours');
   const notesEl = document.getElementById('log-notes');
   const task  = taskEl  ? taskEl.value.trim()  : '';
-  const cat   = catEl   ? catEl.value          : 'exp';
-  const hours = parseFloat(hoursEl ? hoursEl.value : 8);
+  const cat   = catEl   ? catEl.value          : '';
+  const hours = parseFloat(hoursEl ? hoursEl.value : HOURS_DEFAULT);
   const notes = notesEl ? notesEl.value.trim() : '';
-  if(!task || task.length < 3){
-    showToast('Please describe your task (min 3 characters)');
-    return;
-  }
-  if(task.length > 500){
-    showToast('Task description too long (max 500 characters)');
-    return;
-  }
-  if(!cat){
-    showToast('Please select a category');
-    return;
-  }
-  if(isNaN(hours) || hours < 0.25 || hours > 24){
-    showToast('Hours must be between 0.25 and 24');
-    return;
-  }
-  if(notes && notes.length > 1000){
-    showToast('Notes too long (max 1000 characters)');
-    return;
-  }
-  const catPts = {exp:2, perf:2, res:2, team:1, train:1};
+  const catPts = {seniority: 2, performance: 2, awards: 2, tenure: 1, veterans: 1};
   const pts = catPts[cat] || 1;
   const data = loadData();
-  const mx = {exp:30, perf: 25, train:20, res:15, team:10};
-  data[cat] = Math.min(mx[cat] || 30, data[cat] + pts);
+  const mx = {seniority: 30, performance: 25, awards: 20, tenure: 15, veterans: 10};
+  data[cat] = Math.min(mx[cat] || 30, (data[cat] || 0) + pts);
   data.journal.push({
     date:  new Date().toISOString().slice(0,10),
     cat:   cat,
-    task:  task,
+    task:  escapeHtml(task),
     hours: hours,
-    notes: notes,
+    notes: escapeHtml(notes),
     ts:    Date.now()
   });
   saveData(data);
   if(taskEl)  taskEl.value  = '';
   if(notesEl) notesEl.value = '';
-  if(hoursEl) hoursEl.value = '8';
+  resetHoursStepper();
   closeLogModal();
   renderDashboard();
   showToast('✓ Entry saved! +' + pts + ' pts');
 }
+
+// ╔══════════════════════════════════════════════════════════════════════╗
+// ║  MODULE: FORM UX — char counters, inline validation, cat grid,      ║
+// ║          hours stepper                                              ║
+// ╚══════════════════════════════════════════════════════════════════════╝
+
+/**
+ * Updates a character counter element based on current input length.
+ * Applies warning/danger/blocked modifier classes at usage thresholds.
+ * @param {HTMLElement} inputEl   - The input or textarea element being measured
+ * @param {HTMLElement} counterEl - The span.char-counter element to update
+ * @param {number}      maxLen   - Maximum character count
+ * @returns {boolean} true if field is at or over maxLen (blocked); false otherwise
+ */
+function updateCharCounter(inputEl, counterEl, maxLen) {
+  const len = inputEl.value.length;
+  const remaining = Math.max(0, maxLen - len);
+  counterEl.textContent = remaining + ' / ' + maxLen;
+  counterEl.classList.remove('char-counter--warn', 'char-counter--danger', 'char-counter--blocked');
+  const pct = len / maxLen;
+  if (pct >= 1.0) {
+    counterEl.classList.add('char-counter--blocked');
+    return true;
+  } else if (pct >= 0.95) {
+    counterEl.classList.add('char-counter--danger');
+  } else if (pct >= 0.80) {
+    counterEl.classList.add('char-counter--warn');
+  }
+  return false;
+}
+
+/**
+ * Attaches input event listeners to task and notes fields for live char counting.
+ * Also clears field errors on input and calls updateSaveButtonState.
+ * Performs initial render of both counters on init.
+ * @returns {void}
+ */
+function initCharCounters() {
+  const taskEl       = document.getElementById('log-task');
+  const notesEl      = document.getElementById('log-notes');
+  const taskCounter  = document.getElementById('task-char-counter');
+  const notesCounter = document.getElementById('notes-char-counter');
+  if (taskEl && taskCounter) {
+    taskEl.addEventListener('input', function() {
+      updateCharCounter(taskEl, taskCounter, TASK_MAX_CHARS);
+      clearFieldError('task');
+      updateSaveButtonState();
+    });
+    updateCharCounter(taskEl, taskCounter, TASK_MAX_CHARS);
+  }
+  if (notesEl && notesCounter) {
+    notesEl.addEventListener('input', function() {
+      updateCharCounter(notesEl, notesCounter, NOTES_MAX_CHARS);
+      clearFieldError('notes');
+      updateSaveButtonState();
+    });
+    updateCharCounter(notesEl, notesCounter, NOTES_MAX_CHARS);
+  }
+}
+
+/**
+ * Displays an inline field error message and disables the save button.
+ * @param {string} fieldId - Field base id: 'task', 'hours', 'category', or 'notes'
+ * @param {string} message - Human-readable error text to display
+ * @returns {void}
+ */
+function showFieldError(fieldId, message) {
+  const el = document.getElementById(fieldId + '-error');
+  if (!el) return;
+  el.textContent = message;
+  el.classList.add('visible');
+  updateSaveButtonState();
+}
+
+/**
+ * Clears an inline field error message and re-evaluates the save button state.
+ * @param {string} fieldId - Field base id: 'task', 'hours', 'category', or 'notes'
+ * @returns {void}
+ */
+function clearFieldError(fieldId) {
+  const el = document.getElementById(fieldId + '-error');
+  if (!el) return;
+  el.classList.remove('visible');
+  el.textContent = '';
+  updateSaveButtonState();
+}
+
+/**
+ * Single authority for enabling/disabling the log-save-btn.
+ * Disables button if any field-error is visible or any counter is blocked.
+ * @returns {void}
+ */
+function updateSaveButtonState() {
+  const btn = document.getElementById('log-save-btn');
+  if (!btn) return;
+  const hasErrors    = document.querySelectorAll('.field-error.visible').length > 0;
+  const taskCounter  = document.getElementById('task-char-counter');
+  const notesCounter = document.getElementById('notes-char-counter');
+  const taskBlocked  = taskCounter  && taskCounter.classList.contains('char-counter--blocked');
+  const notesBlocked = notesCounter && notesCounter.classList.contains('char-counter--blocked');
+  if (hasErrors || taskBlocked || notesBlocked) {
+    btn.disabled = true;
+    btn.style.opacity = '0.5';
+    btn.style.cursor  = 'not-allowed';
+  } else {
+    btn.disabled = false;
+    btn.style.opacity = '';
+    btn.style.cursor  = '';
+  }
+}
+
+/**
+ * Runs all form validation rules, shows inline errors, returns overall validity.
+ * Called only from saveLog() — NOT wired to real-time input events.
+ * @returns {boolean} true if ALL rules pass; false if ANY error was shown
+ */
+function validateLogForm() {
+  let isValid = true;
+  clearFieldError('task');
+  clearFieldError('hours');
+  clearFieldError('category');
+  clearFieldError('notes');
+  const taskEl    = document.getElementById('log-task');
+  const taskTrim  = taskEl ? taskEl.value.trim() : '';
+  if (!taskTrim || taskTrim.length < 3) {
+    showFieldError('task', 'Task description is required (min 3 characters)');
+    isValid = false;
+  } else if (taskTrim.length > TASK_MAX_CHARS) {
+    showFieldError('task', 'Task is too long (max ' + TASK_MAX_CHARS + ' characters)');
+    isValid = false;
+  }
+  const catEl = document.getElementById('log-category');
+  const cat   = catEl ? catEl.value : '';
+  if (!cat) {
+    showFieldError('category', 'Please select a category');
+    isValid = false;
+  }
+  const hoursEl = document.getElementById('log-hours');
+  const hours   = parseFloat(hoursEl ? hoursEl.value : NaN);
+  if (isNaN(hours) || hours < HOURS_MIN || hours > HOURS_MAX) {
+    showFieldError('hours', 'Hours must be between ' + HOURS_MIN + ' and ' + HOURS_MAX);
+    isValid = false;
+  }
+  const notesEl   = document.getElementById('log-notes');
+  const notesTrim = notesEl ? notesEl.value.trim() : '';
+  if (notesTrim.length > NOTES_MAX_CHARS) {
+    showFieldError('notes', 'Notes are too long (max ' + NOTES_MAX_CHARS + ' characters)');
+    isValid = false;
+  }
+  return isValid;
+}
+
+/**
+ * Attaches click and keyboard listeners to all .cat-btn elements in the category grid.
+ * @returns {void}
+ */
+function initCategoryGrid() {
+  const buttons = document.querySelectorAll('#log-category-grid .cat-btn');
+  buttons.forEach(function(btn) {
+    btn.addEventListener('click', function() {
+      selectCategory(btn.dataset.value);
+    });
+    btn.addEventListener('keydown', function(event) {
+      if (event.key === 'Enter' || event.key === ' ') {
+        event.preventDefault();
+        selectCategory(btn.dataset.value);
+      }
+    });
+  });
+}
+
+/**
+ * Selects a category button by value, updating ARIA state and hidden input.
+ * Clears any category field error immediately on selection.
+ * @param {string} value - The data-value of the button to select
+ * @returns {void}
+ */
+function selectCategory(value) {
+  const buttons = document.querySelectorAll('#log-category-grid .cat-btn');
+  buttons.forEach(function(btn) {
+    btn.classList.remove('cat-btn--selected');
+    btn.setAttribute('aria-checked', 'false');
+  });
+  const target = document.querySelector('#log-category-grid .cat-btn[data-value="' + value + '"]');
+  if (target) {
+    target.classList.add('cat-btn--selected');
+    target.setAttribute('aria-checked', 'true');
+  }
+  const hiddenInput = document.getElementById('log-category');
+  if (hiddenInput) hiddenInput.value = value;
+  clearFieldError('category');
+}
+
+/**
+ * Resets all category buttons to unselected state and clears the hidden input.
+ * @returns {void}
+ */
+function clearCategoryGrid() {
+  const buttons = document.querySelectorAll('#log-category-grid .cat-btn');
+  buttons.forEach(function(btn) {
+    btn.classList.remove('cat-btn--selected');
+    btn.setAttribute('aria-checked', 'false');
+  });
+  const hiddenInput = document.getElementById('log-category');
+  if (hiddenInput) hiddenInput.value = '';
+}
+
+/**
+ * Attaches click and change/input listeners to hours stepper widget elements.
+ * Performs initial render via resetHoursStepper().
+ * @returns {void}
+ */
+function initHoursStepper() {
+  const decBtn  = document.getElementById('hours-decrement');
+  const incBtn  = document.getElementById('hours-increment');
+  const hoursEl = document.getElementById('log-hours');
+  if (decBtn) decBtn.addEventListener('click', function() { stepHours(-1); });
+  if (incBtn) incBtn.addEventListener('click', function() { stepHours(1);  });
+  if (hoursEl) {
+    hoursEl.addEventListener('change', function() {
+      const val = parseFloat(hoursEl.value);
+      if (isNaN(val)) {
+        showFieldError('hours', 'Please enter a valid number');
+        updateStepperButtonStates();
+        return;
+      }
+      if (val < HOURS_MIN || val > HOURS_MAX) {
+        showFieldError('hours', 'Hours must be between ' + HOURS_MIN + ' and ' + HOURS_MAX);
+        updateStepperButtonStates();
+        return;
+      }
+      clearFieldError('hours');
+      hoursEl.value = clampHours(val);
+      updateStepperButtonStates();
+    });
+    hoursEl.addEventListener('input', function() {
+      clearFieldError('hours');
+    });
+  }
+  resetHoursStepper();
+}
+
+/**
+ * Steps the hours input up or down by HOURS_STEP, clamped to [HOURS_MIN, HOURS_MAX].
+ * @param {number} direction - 1 for increment, -1 for decrement
+ * @returns {void}
+ */
+function stepHours(direction) {
+  const hoursEl = document.getElementById('log-hours');
+  if (!hoursEl) return;
+  const current = parseFloat(hoursEl.value) || HOURS_DEFAULT;
+  const next    = clampHours(current + direction * HOURS_STEP);
+  hoursEl.value = next;
+  updateStepperButtonStates();
+  clearFieldError('hours');
+}
+
+/**
+ * Clamps a hours value to [HOURS_MIN, HOURS_MAX], rounded to HOURS_STEP precision.
+ * @param {number} value - Raw hours value to clamp
+ * @returns {number} Clamped and step-rounded value
+ */
+function clampHours(value) {
+  const clamped = Math.min(HOURS_MAX, Math.max(HOURS_MIN, value));
+  return parseFloat((Math.round(clamped / HOURS_STEP) * HOURS_STEP).toFixed(2));
+}
+
+/**
+ * Disables decrement button at HOURS_MIN and increment button at HOURS_MAX.
+ * @returns {void}
+ */
+function updateStepperButtonStates() {
+  const hoursEl = document.getElementById('log-hours');
+  const decBtn  = document.getElementById('hours-decrement');
+  const incBtn  = document.getElementById('hours-increment');
+  if (!hoursEl || !decBtn || !incBtn) return;
+  const val = parseFloat(hoursEl.value);
+  decBtn.disabled = (!isNaN(val) && val <= HOURS_MIN);
+  incBtn.disabled = (!isNaN(val) && val >= HOURS_MAX);
+}
+
+/**
+ * Resets the hours input to HOURS_DEFAULT and updates stepper button states.
+ * Called by initHoursStepper() on init and closeLogModal() on reset.
+ * @returns {void}
+ */
+function resetHoursStepper() {
+  const hoursEl = document.getElementById('log-hours');
+  if (hoursEl) hoursEl.value = HOURS_DEFAULT;
+  updateStepperButtonStates();
+}
+
+
 // ╔══════════════════════════════════════════════════════════════════════╗
 // ║  MODULE: PDF ENHANCEMENTS — defer-safe generation, ring, citations  ║
 // ╚══════════════════════════════════════════════════════════════════════╝
@@ -1045,7 +1443,7 @@ function generatePDF(){
     let y=52;
     doc.setTextColor(...navy);doc.setFontSize(14);doc.setFont(undefined,'bold');
     doc.text('Score Summary',14,y);y+=8;
-    const rows=[["Total Score",score+"/100"],["Experience",data.exp+"/30"],["Performance",data.perf+"/25"],["Training",data.train+"/20"],["Results",data.res+"/15"],["Teamwork",data.team+"/10"],["Journal Entries",String(data.journal.length)],["Current Streak",streak+" days"],["Courses Done",String(done.length)]];
+    const rows=[["Total Score",score+"/100"],["Seniority",(data.seniority||0)+"/30"],["Performance",(data.performance||0)+"/25"],["Veterans",(data.veterans||0)+"/20"],["Awards",(data.awards||0)+"/15"],["Tenure",(data.tenure||0)+"/10"],["Journal Entries",String(data.journal.length)],["Current Streak",streak+" days"],["Courses Done",String(done.length)]];
     rows.forEach(function(row,i){
       if(i%2===0)doc.setFillColor(...lt);else doc.setFillColor(...white);
       doc.rect(14,y-4,182,8,'F');
@@ -1291,6 +1689,12 @@ document.addEventListener('DOMContentLoaded',function(){
   }, PDF_CDN_TIMEOUT_MS);
   // Feature E: Initialize offline detection
   initOfflineDetection();
+  // Sprint 6: Data migration MUST run before any loadData() call
+  migrateDataV2();
+  // Sprint 6: Initialize Form UX features
+  initCharCounters();
+  initCategoryGrid();
+  initHoursStepper();
 });
 </script>
 </body>
