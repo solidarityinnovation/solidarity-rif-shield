@@ -1,6 +1,6 @@
 # AFGE RIF Shield — Sprint Progress
 
-## Phase 1: Core Platform (7/12 sprints complete — 58%)
+## Phase 1: Core Platform (8/12 sprints complete — 67%)
 
 | Sprint | Name | QA Score | Commit | Status |
 |--------|------|----------|--------|--------|
@@ -10,20 +10,21 @@
 | 4 | PWA Hardening | 57/57 | 0eab45c | ✅ |
 | 5 | PDF Export + Offline Banner | 90/90 | 4c6d2fe | ✅ |
 | 6 | Form UX + Schema v2 Migration | 97/97 | 2b5f35d | ✅ |
-| 7 | Journal Search + Filters | 103/103 | TBD | ✅ |
-| 8 | Training Gap Analysis | — | — | ⬜ NEXT |
-| 9 | Score History Chart | — | — | ⬜ |
+| 7 | Journal Search + Filters | 103/103 | 5fd0736 | ✅ |
+| 8 | Training Gap Analysis | 86/86 | TBD | ✅ |
+| 9 | Score History Chart | — | — | ⬜ NEXT |
 | 10 | Backend API + Auth | — | — | ⬜ |
 | 11 | PostgreSQL + RLS | — | — | ⬜ |
 | 12 | Multi-device Sync | — | — | ⬜ |
 
-## Cumulative QA: 436/436 (100%)
+## Cumulative QA: 502/502 (100%)
 
 ## Open Bugs: 0
 ## Security Issues: 0
 ## Open Regressions: 0
 
-## QA Suite Improvements for Sprint 8
-- Scope SW version check to CACHE_VERSION constant value only (not full-file string search)
-- Raise @param threshold to ≥25
-- Add check: updateChipCounts called in renderJournal
+## QA Suite Improvements for Sprint 9
+- Scope SW version check to CACHE_VERSION constant value only (not full-file string scan)
+- Refine float precision check to match at-assignment-time pattern
+- Add check: aria-label on gap severity badges
+- Consider Content-Security-Policy meta tag check

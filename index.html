@@ -382,6 +382,24 @@ body.has-offline-banner #screens {
   text-align: center;
 }
 .journal-empty-state p { font-size: 14px; margin: 0; }
+/* -- Sprint 8: Training Gap Analysis UI --- */
+.training-stats-header{display:flex;flex-direction:row;gap:10px;padding:0 0 14px;}
+.stat-chip{flex:1;background:var(--card);border:1.5px solid var(--navy);border-radius:var(--r-card);padding:12px 8px;text-align:center;box-shadow:var(--sh-sm);}
+.stat-chip-value{font-size:22px;font-weight:700;color:var(--gold);line-height:1;margin-bottom:4px;}
+.stat-chip-label{font-size:10px;font-weight:600;color:var(--muted);text-transform:uppercase;}
+.training-gap-section{margin-bottom:14px;}
+.gap-card{background:var(--card);border-left:4px solid var(--border);border-radius:var(--r-card);padding:14px;margin-bottom:10px;box-shadow:var(--sh-sm);}
+.gap-card--critical{border-left-color:#dc2626;}
+.gap-card--warning{border-left-color:#d97706;}
+.gap-card--done{opacity:.65;}
+.gap-badge{display:inline-flex;align-items:center;font-size:10px;font-weight:700;padding:2px 8px;border-radius:10px;margin-left:6px;}
+.gap-badge--critical{background:#fef2f2;color:#dc2626;border:1px solid #fecaca;}
+.gap-badge--warning{background:#fffbeb;color:#d97706;border:1px solid #fde68a;}
+.gap-progress-bar{width:100%;height:8px;background:var(--border);border-radius:4px;overflow:hidden;margin:8px 0;}
+.gap-progress-fill{height:100%;border-radius:4px;transition:width .6s ease;}
+.gap-done-check{accent-color:var(--gold);margin-right:6px;width:15px;height:15px;cursor:pointer;vertical-align:middle;}
+.training-all-clear{background:var(--card);border:1.5px solid #16a34a;border-radius:var(--r-card);padding:20px;text-align:center;margin-bottom:14px;}
+
 </style>
 </head>
 <body>
@@ -464,6 +482,14 @@ body.has-offline-banner #screens {
 <div class="sec-hd"><span class="sec-title">Training</span></div>
 <div class="alert alert-info"><div class="alert-icon">&#128161;</div><div><div class="alert-t">Training Gap Analysis</div><div class="alert-d">Complete recommended courses to boost your Training score and RIF protection standing.</div></div></div>
 <div class="hero-card"><div class="hero-top"><div class="hero-ring-wrap"><div class="hero-ring"><svg width="80" height="80" viewBox="0 0 80 80"><circle class="ring-bg" cx="40" cy="40" r="34"/><circle class="ring-fg" id="t-ring-fg" cx="40" cy="40" r="34" stroke-dasharray="213.6" stroke-dashoffset="213.6"/></svg><div class="ring-val"><div class="ring-num" id="t-ring-num">0</div><div class="ring-den">/20</div></div></div><div class="hero-meta"><div class="hero-level-lbl">Training Score</div><div class="hero-level-val" id="t-score-val">0/20</div><div class="hero-level-sub" id="t-potential">Complete courses to earn pts</div></div></div></div><div class="hero-xp"><div class="xp-bg"><div class="xp-fill" id="t-xp-fill" style="width:0%"></div></div></div></div>
+<!-- Sprint 8: Training Gap Analysis Stats Header -->
+<div id="training-stats-header" class="training-stats-header">
+  <div class="stat-chip"><div id="stat-total-score" class="stat-chip-value">&mdash;</div><div class="stat-chip-label">Total Score</div></div>
+  <div class="stat-chip"><div id="stat-gap-count" class="stat-chip-value">&mdash;</div><div class="stat-chip-label">Gaps Found</div></div>
+  <div class="stat-chip"><div id="stat-priority-gap" class="stat-chip-value">&mdash;</div><div class="stat-chip-label">Priority Gap</div></div>
+</div>
+<div id="training-gap-list" class="training-gap-section"></div>
+
 <div class="card"><div class="card-hdr"><span class="card-ttl">Recommended Courses</span><span class="chip chip-b" id="courses-done-badge">0 done</span></div>
 <div id="course-list">
 <div class="ti" id="ti-fac-cor"><div class="ti-pts" id="tipts-fac-cor"><div class="tp">+4</div><div class="tl">pts</div></div><div class="ti-info"><div class="ti-name">FAC-COR Level I</div><div class="ti-desc">Contracting Officer Representative - Federal Acquisition</div><div class="ti-actions"><a href="https://faitas.army.mil" target="_blank" class="btn btn-o btn-sm">Open Course</a><button class="toggle-done" id="td-fac-cor" onclick="toggleCourse(&#39;fac-cor&#39;)">&#10003; Mark Done</button></div></div></div>
@@ -713,8 +739,25 @@ function loadCourses(){try{const r=localStorage.getItem(COURSE_KEY);return r?JSO
 function saveCourses(c){localStorage.setItem(COURSE_KEY,JSON.stringify(c));}
 const MAXES={seniority:30,performance:25,awards:20,tenure:15,veterans:10};
 const LVL_T=[{l:5,min:90,lbl:'Max'},{l:4,min:80,lbl:'Strong'},{l:3,min:70,lbl:'Good'},{l:2,min:60,lbl:'Fair'},{l:1,min:0,lbl:'Basic'}];
+// -- Sprint 8: Training Gap Analysis Constants ---
+/** @constant {number} Gap detection threshold - below 70% flagged */
+const GAP_THRESHOLD_PCT = 0.70;
+/** @constant {number} Critical severity threshold */
+const GAP_CRITICAL_PCT  = 0.50;
+/** @constant {string} localStorage key prefix for gap completion */
+const TRAIN_DONE_KEY_PREFIX = 'rif_train_done_';
+/** @constant Category definitions - max values MUST match MAXES */
+const CATEGORY_META = {
+  seniority:   {key:'seniority',   displayName:'Seniority',    max:30, recommendation:'Document your service history and submit any SF-50 corrections to HR.'},
+  performance: {key:'performance', displayName:'Performance',   max:25, recommendation:'Request a current rating from your supervisor and file it with HR.'},
+  awards:      {key:'awards',      displayName:'Awards',        max:20, recommendation:'Compile all awards, commendations, and recognitions into your eOPF.'},
+  tenure:      {key:'tenure',      displayName:'Tenure',        max:15, recommendation:'Verify your service computation date with HR and correct any errors.'},
+  veterans:    {key:'veterans',    displayName:'Veterans Pref', max:10, recommendation:'Submit your DD-214 and veterans preference documentation to HR.'},
+};
 /** @type {BeforeInstallPromptEvent|null} Captured install prompt event, null if unavailable or already used */
 let deferredInstallPrompt = null;
+/** @type {Array} Gap objects from last computeTrainingGaps() call */
+let trainingGaps = [];
 // ╔═══════════════════════════════════════════════════════════════════╗
 /**
  * Migrates localStorage data from schema v1 to v2.
@@ -1280,6 +1323,11 @@ function renderTraining(){
  * @param {string} cid - Course ID string (e.g. 'fac-cor', 'cyber')
  * @returns {void}
  */
+  // Sprint 8: compute and render training gap analysis
+  trainingGaps = computeTrainingGaps();
+  renderGapCards(trainingGaps);
+  updateTrainingHeader(trainingGaps);
+
 function toggleCourse(cid){
   const done=loadCourses();
   const cPts={'fac-cor':4,'deia':3,'cyber':2,'pm':2,'hr':2,'ethics':2,'eeo':1};
@@ -1299,6 +1347,88 @@ function toggleCourse(cid){
   renderTraining();
   renderDashboard();
 }
+// ╔═══════════════════════════════════════════════════════════════════════╗
+// ║  MODULE: TRAINING GAP ANALYSIS — detection, rendering, persistence  ║
+// ╚═══════════════════════════════════════════════════════════════════════╝
+function getTrainDone(category) {
+  try { return localStorage.getItem(TRAIN_DONE_KEY_PREFIX + category) === 'true'; }
+  catch(e) { return false; }
+}
+function setTrainDone(category, done) {
+  try {
+    if (done) localStorage.setItem(TRAIN_DONE_KEY_PREFIX + category, 'true');
+    else localStorage.removeItem(TRAIN_DONE_KEY_PREFIX + category);
+  } catch(e) { console.warn('RIF: setTrainDone err', e); }
+}
+function getGapSeverity(pct) { return pct < GAP_CRITICAL_PCT ? 'critical' : 'warning'; }
+function computeTrainingGaps() {
+  var d = loadData(); var gaps = [];
+  Object.keys(CATEGORY_META).forEach(function(key) {
+    var meta = CATEGORY_META[key]; if (!meta) return;
+    var score = (d[key] || 0);
+    var pct = Math.round((score / meta.max) * 1000) / 1000;
+    if (pct < GAP_THRESHOLD_PCT) {
+      gaps.push({key:key, displayName:meta.displayName, score:score, max:meta.max,
+        pct:pct, deficit:Math.round((GAP_THRESHOLD_PCT-pct)*meta.max*10)/10,
+        severity:getGapSeverity(pct), rank:0, recommendation:meta.recommendation});
+    }
+  });
+  gaps.sort(function(a,b){return a.pct-b.pct;});
+  gaps.forEach(function(g,i){g.rank=i+1;});
+  return gaps;
+}
+function buildGapCardHTML(gap) {
+  var pct100 = Math.round(gap.pct * 100);
+  var fillColor = gap.severity === 'critical' ? '#dc2626' : '#d97706';
+  var doneChecked = getTrainDone(gap.key) ? 'checked' : '';
+  var doneClass  = getTrainDone(gap.key) ? ' gap-card--done' : '';
+  return '<div class="gap-card gap-card--' + gap.severity + doneClass + '" id="gap-card-' + gap.key + '">'
+    + '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">'
+    + '<label style="display:flex;align-items:center;font-weight:600;font-size:14px;cursor:pointer">'
+    + '<input type="checkbox" class="gap-done-check" data-category="' + gap.key + '" ' + doneChecked
+    + ' onchange="handleGapCheckbox(this)"> ' + gap.displayName + '</label>'
+    + '<span class="gap-badge gap-badge--' + gap.severity + '">'
+    + (gap.severity === 'critical' ? 'CRITICAL' : 'WARNING') + '</span></div>'
+    + '<div style="font-size:12px;color:var(--muted);margin-bottom:4px">Score: '
+    + gap.score + ' / ' + gap.max + ' pts (' + pct100 + '%)</div>'
+    + '<div class="gap-progress-bar"><div class="gap-progress-fill" style="width:' + pct100
+    + '%;background:' + fillColor + ';"></div></div>'
+    + '<div style="font-size:12px;margin-bottom:6px">Need <strong>' + gap.deficit
+    + ' more pts</strong> to reach 70% threshold</div>'
+    + '<div style="font-size:11px;color:var(--muted);font-style:italic">' + gap.recommendation + '</div>'
+    + '</div>';
+}
+function renderGapCards(gaps) {
+  var el = document.getElementById('training-gap-list'); if (!el) return;
+  if (!gaps || gaps.length === 0) {
+    el.innerHTML = '<div class="training-all-clear">'
+      + '<div style="font-size:24px">&#10003;</div>'
+      + '<strong>All categories above threshold!</strong>'
+      + '<p style="color:var(--muted);font-size:13px">All scores at or above 70% &#8212; great work!</p></div>';
+    return;
+  }
+  el.innerHTML = gaps.map(buildGapCardHTML).join('');
+}
+function updateTrainingHeader(gaps) {
+  var d = loadData();
+  var totEl = document.getElementById('stat-total-score');
+  var cntEl = document.getElementById('stat-gap-count');
+  var priEl = document.getElementById('stat-priority-gap');
+  if (totEl) totEl.textContent = totalScore(d);
+  if (cntEl) cntEl.textContent = gaps.length;
+  if (priEl) priEl.textContent = gaps.length > 0 ? gaps[0].displayName : 'None';
+}
+function handleGapCheckbox(el) {
+  var category = el.getAttribute('data-category');
+  if (!category) return;
+  setTrainDone(category, el.checked);
+  var card = document.getElementById('gap-card-' + category);
+  if (card) {
+    if (el.checked) card.classList.add('gap-card--done');
+    else card.classList.remove('gap-card--done');
+  }
+}
+
 // ╔═════════════════════════════════════════════════════════════╗
 // ║  MODULE: REPORTS — score summary rendering and data export  ║
 // ╚═════════════════════════════════════════════════════════════╝
