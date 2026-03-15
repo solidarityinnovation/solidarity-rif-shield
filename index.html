@@ -400,6 +400,18 @@ body.has-offline-banner #screens {
 .gap-done-check{accent-color:var(--gold);margin-right:6px;width:15px;height:15px;cursor:pointer;vertical-align:middle;}
 .training-all-clear{background:var(--card);border:1.5px solid #16a34a;border-radius:var(--r-card);padding:20px;text-align:center;margin-bottom:14px;}
 
+
+/* Sprint 9: Score History */
+.hist-section{margin-top:1.5rem;}
+.hist-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:.75rem;}
+.hist-title{font-size:.875rem;font-weight:600;color:var(--muted);}
+.trend-row{display:flex;gap:.5rem;flex-wrap:wrap;margin-bottom:1rem;}
+.trend-badge{display:inline-flex;align-items:center;gap:.3rem;padding:.25rem .65rem;border-radius:999px;font-size:.78rem;font-weight:600;line-height:1.2;}
+.trend-badge.up{background:#d4edda;color:#155724;}
+.trend-badge.down{background:#f8d7da;color:#721c24;}
+.trend-badge.flat{background:#e2e3e5;color:#383d41;}
+.hist-canvas-wrap{position:relative;width:100%;height:180px;background:#f8f9fa;border-radius:.5rem;overflow:hidden;}
+.hist-empty{display:flex;align-items:center;justify-content:center;height:180px;color:#6c757d;font-size:.875rem;font-style:italic;}
 </style>
 </head>
 <body>
@@ -435,6 +447,18 @@ body.has-offline-banner #screens {
 <button class="qa-card" onclick="nav(&#39;journal&#39;)"><span class="qa-icon">&#128200;</span><div class="qa-title">Journal</div><div class="qa-desc">View history</div></button>
 </div>
 </div>
+  <!-- Sprint 9: Score History Section -->
+  <div class="card hist-section" id="score-history-card">
+    <div class="card-hdr"><span class="card-ttl">Score History</span></div>
+    <div class="hist-hdr">
+      <span id="hist-last-snap" class="hist-title">No snapshots yet</span>
+    </div>
+    <div class="trend-row" id="trend-row" aria-label="Score trend indicators"></div>
+    <div id="hist-canvas-wrap" class="hist-canvas-wrap">
+      <canvas id="history-chart" aria-label="Score history chart" role="img" width="800" height="180"></canvas>
+    </div>
+  </div>
+
 <div class="screen" id="s-journal">
 <div class="sec-hd"><span class="sec-title">Daily Journal</span><button class="btn btn-p btn-sm" onclick="openLogModal()">+ Log Entry</button></div>
 <div class="card"><div class="card-hdr"><span class="card-ttl">Weekly Activity</span></div><canvas id="weekChart" height="160"></canvas></div>
@@ -694,7 +718,7 @@ const JOURNAL_FILTER_CATEGORIES = [
  * All category scores start at 0.
  * @returns {{seniority:number, performance:number, awards:number, tenure:number, veterans:number, exp:number, perf:number, train:number, res:number, team:number, journal:Array}}
  */
-function defaultData(){return {seniority:0,performance:0,awards:0,tenure:0,veterans:0,exp:0,perf:0,train:0,res:0,team:0,journal:[]};} // all categories start at 0
+function defaultData(){return {seniority:0,performance:0,awards:0,tenure:0,veterans:0,exp:0,perf:0,train:0,res:0,team:0,journal:[],scoreHistory:[]};} // all categories start at 0
 /**
  * Loads user data from localStorage with error fallback.
  * Falls back to defaultData() if storage is empty, corrupted, or schema mismatch.
@@ -723,7 +747,7 @@ function loadData(){
  */
 function saveData(d){
   // Add schema version for future migration support
-  const versioned = Object.assign({}, d, {_schema: 2, _saved: new Date().toISOString()});
+  const versioned = Object.assign({}, d, {_schema: 3, _saved: new Date().toISOString()});
   localStorage.setItem(STORE_KEY, JSON.stringify(versioned));
 }
 /**
@@ -746,6 +770,9 @@ const GAP_THRESHOLD_PCT = 0.70;
 const GAP_CRITICAL_PCT  = 0.50;
 /** @constant {string} localStorage key prefix for gap completion */
 const TRAIN_DONE_KEY_PREFIX = 'rif_train_done_';
+const SCORE_HISTORY_MAX_SNAPSHOTS = 90;
+const SCORE_HISTORY_CHART_DAYS = 30;
+const SCORE_HISTORY_KEY = 'rif_score_history';
 /** @constant Category definitions - max values MUST match MAXES */
 const CATEGORY_META = {
   seniority:   {key:'seniority',   displayName:'Seniority',    max:30, recommendation:'Document your service history and submit any SF-50 corrections to HR.'},
@@ -758,6 +785,7 @@ const CATEGORY_META = {
 let deferredInstallPrompt = null;
 /** @type {Array} Gap objects from last computeTrainingGaps() call */
 let trainingGaps = [];
+let historyChart = null;
 // ╔═══════════════════════════════════════════════════════════════════╗
 /**
  * Migrates localStorage data from schema v1 to v2.
@@ -797,6 +825,24 @@ function migrateDataV2() {
   }
 }
 
+/**
+ * Migrates localStorage data from schema v2 to v3.
+ * Adds scoreHistory:[] if absent. Idempotent: exits when _schema>=3.
+ * Reads raw localStorage (loadData strips _schema fields).
+ * @returns {void}
+ */
+function migrateDataV3() {
+  try {
+    var raw = localStorage.getItem(STORE_KEY);
+    if (!raw) return;
+    var stored = JSON.parse(raw);
+    if (stored._schema && stored._schema >= 3) return;
+    if (!Array.isArray(stored.scoreHistory)) stored.scoreHistory = [];
+    stored._schema = 3;
+    stored._saved  = new Date().toISOString();
+    localStorage.setItem(STORE_KEY, JSON.stringify(stored));
+  } catch(e) { console.warn('RIF Shield: migrateDataV3 failed', e); }
+}
 
 // ║  MODULE: SCORE ENGINE — scoring, level calculation, streak logic  ║
 // ╚═══════════════════════════════════════════════════════════════════╝
@@ -1344,6 +1390,7 @@ function toggleCourse(cid){
   }
   saveCourses(done);
   saveData(data);
+  captureScoreSnapshot(data); // Sprint 9
   renderTraining();
   renderDashboard();
 }
@@ -1428,6 +1475,104 @@ function handleGapCheckbox(el) {
     else card.classList.remove('gap-card--done');
   }
 }
+// ╔═══════════════════════════════════════════════════════════════════════╗
+// ║  MODULE: SCORE HISTORY — snapshots, chart, trend indicators         ║
+// ╚═══════════════════════════════════════════════════════════════════════╝
+function getStoredScoreHistory() {
+  try {
+    var raw = localStorage.getItem(STORE_KEY);
+    if (!raw) return [];
+    var stored = JSON.parse(raw);
+    return Array.isArray(stored.scoreHistory) ? stored.scoreHistory : [];
+  } catch(e) { return []; }
+}
+
+function saveStoredScoreHistory(history) {
+  try {
+    var raw = localStorage.getItem(STORE_KEY);
+    var stored = raw ? JSON.parse(raw) : {};
+    stored.scoreHistory = history; stored._schema = 3;
+    stored._saved = new Date().toISOString();
+    localStorage.setItem(STORE_KEY, JSON.stringify(stored));
+  } catch(e) { console.warn('RIF Shield: saveStoredScoreHistory failed', e); }
+}
+
+function captureScoreSnapshot(data) {
+  try {
+    var d = new Date();
+    var dateStr = d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+    var score = totalScore(data);
+    var history = getStoredScoreHistory();
+    var idx = history.findIndex(function(e){ return e.date===dateStr; });
+    if (idx !== -1) { history[idx].score = score; }
+    else { history.push({date:dateStr, score:score}); }
+    if (history.length > SCORE_HISTORY_MAX_SNAPSHOTS)
+      history = history.slice(history.length - SCORE_HISTORY_MAX_SNAPSHOTS);
+    saveStoredScoreHistory(history);
+    renderHistoryChart(); renderTrendIndicators();
+  } catch(e) { console.warn('RIF Shield: captureScoreSnapshot failed', e); }
+}
+
+function buildHistoryChartData() {
+  var history = getStoredScoreHistory();
+  if (history.length > SCORE_HISTORY_CHART_DAYS)
+    history = history.slice(history.length - SCORE_HISTORY_CHART_DAYS);
+  return { labels:history.map(function(e){return e.date.slice(5);}),
+           scores:history.map(function(e){return e.score;}) };
+}
+
+function renderHistoryChart() {
+  var wrap=document.getElementById('hist-canvas-wrap');
+  var snap=document.getElementById('hist-last-snap');
+  if (!wrap) return;
+  var cd=buildHistoryChartData();
+  if (cd.scores.length < 2) {
+    if (historyChart){historyChart.destroy();historyChart=null;}
+    wrap.innerHTML='<div class="hist-empty">Score history appears after 2+ saves</div>';
+    if (snap) snap.textContent='No snapshots yet'; return;
+  }
+  wrap.innerHTML='<canvas id="history-chart" aria-label="Score history chart" role="img"></canvas>';
+  var canvas=document.getElementById('history-chart');
+  if (historyChart){historyChart.destroy();historyChart=null;}
+  historyChart=new Chart(canvas,{type:'line',
+    data:{labels:cd.labels,datasets:[{
+      label:'Total Score',data:cd.scores,borderColor:'#c9a227',
+      backgroundColor:'rgba(201,162,39,0.12)',borderWidth:2,
+      pointRadius:3,pointBackgroundColor:'#c9a227',fill:true,tension:0.3
+    }]},
+    options:{responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{display:false}},
+      scales:{y:{min:0,max:100,ticks:{stepSize:20}},
+              x:{ticks:{maxTicksLimit:7,maxRotation:0}}}}
+  });
+  var lat=getStoredScoreHistory();
+  if (lat.length&&snap)
+    snap.textContent='Last saved: '+lat[lat.length-1].date+'  ('+lat[lat.length-1].score+' pts)';
+}
+
+function computeTrendIndicators() {
+  var h=getStoredScoreHistory(); if (h.length<2) return [];
+  var res=[];
+  [{label:'7-day',days:7},{label:'30-day',days:30}].forEach(function(w){
+    var sl=h.slice(Math.max(0,h.length-(w.days+1)));
+    if (sl.length<2) return;
+    var delta=sl[sl.length-1].score-sl[0].score;
+    var cls=delta>0?'up':(delta<0?'down':'flat');
+    var arr=delta>0?'▲':(delta<0?'▼':'▶');
+    res.push({label:w.label+' '+arr+' '+(delta>=0?'+':'')+delta,cls:cls});
+  });
+  return res;
+}
+
+function renderTrendIndicators() {
+  var row=document.getElementById('trend-row');
+  if (!row) return;
+  var inds=computeTrendIndicators();
+  if (!inds.length){row.innerHTML='';return;}
+  row.innerHTML=inds.map(function(i){
+    return '<span class="trend-badge '+i.cls+'">'+i.label+'</span>';
+  }).join('');
+}
 
 // ╔═════════════════════════════════════════════════════════════╗
 // ║  MODULE: REPORTS — score summary rendering and data export  ║
@@ -1498,6 +1643,7 @@ function saveLog(){
     ts:    Date.now()
   });
   saveData(data);
+  captureScoreSnapshot(data); // Sprint 9
   if(taskEl)  taskEl.value  = '';
   if(notesEl) notesEl.value = '';
   resetHoursStepper();
@@ -2235,6 +2381,8 @@ document.addEventListener('DOMContentLoaded',function(){
   initOfflineDetection();
   // Sprint 6: Data migration MUST run before any loadData() call
   migrateDataV2();
+  // Sprint 9: schema v2->v3 (adds scoreHistory)
+  migrateDataV3();
   // Sprint 6: Initialize Form UX features
   initCharCounters();
   initCategoryGrid();
